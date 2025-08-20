@@ -1,0 +1,54 @@
+# 📦 Flutter build outputs
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.dart_tool/
+
+# 💻 IDEs & Editors
+.idea/
+.vscode/
+
+# 🔐 Environment & secrets
+src/.env
+.env
+
+firebase-debug.log
+*.secret.*
+*.key
+*.pem
+*.jksa
+service-account.json
+
+# Node.js
+src/node_modules/
+
+# 📱 Android specific
+android/key.properties
+android/local.properties
+
+# 🍏 iOS specific
+ios/Pods/
+ios/Flutter/Generated.xcconfig
+
+
+
+# 🧪 Test & coverage
+coverage/
+
+
+# 💾 System
+.DS_Store
+Thumbs.db
+
+
+# Firebase config files
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+serviceAccountKey.json
+
+# 🔧 CI/CD
+codemagic.yaml.secret
+.firebaserc
