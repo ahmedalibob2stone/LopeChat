@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lopechat/splash%20screan/splash_screen.dart';
 import 'OnGenerateRoutes.dart';
-import 'firebase_option_normal.dart';
 import 'firebase_options.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,10 +17,9 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
-    await dotenv.load(fileName:".env");
   }
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptionsNormal.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   final sharedPreferences = await SharedPreferences.getInstance();
 
