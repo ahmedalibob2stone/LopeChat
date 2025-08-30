@@ -15,6 +15,11 @@ class VerifyScreen extends ConsumerStatefulWidget {
 
 class _VerifyScreenState extends ConsumerState<VerifyScreen> {
   final TextEditingController otpController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    ref.read(verifyOtpViewModelProvider.notifier).reset();
+  }
 
   @override
   void dispose() {
@@ -34,14 +39,18 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Listen for state changes and show Snackbars
     ref.listen<VerifyOtpState>(verifyOtpViewModelProvider, (previous, next) {
       if (next.status == VerifyOtpStatus.error && next.errorMessage != null) {
         AppSnackbar.showError(context, next.errorMessage!);
       }
       if (next.status == VerifyOtpStatus.verified) {
+
+
         AppSnackbar.showSuccess(context, "OTP verified successfully");
-        Navigator.pushReplacementNamed(context, '/home');
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.pushReplacementNamed(context, '/home');
+        });
+
       }
     });
 

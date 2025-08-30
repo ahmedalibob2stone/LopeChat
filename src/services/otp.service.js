@@ -13,7 +13,7 @@ exports.sendOtp = async (req, res) => {
     return res.status(400).json({ error: 'Invalid phone number format' });
   }
 
-  const otp = generateOTP();
+  const otp = process.env.TEST_MODE === 'true' ? '123456' : generateOTP();
   console.log(`Generated OTP: ${otp} for number: ${phoneNumber}`);
 
   try {

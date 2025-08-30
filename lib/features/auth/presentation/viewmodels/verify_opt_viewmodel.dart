@@ -107,4 +107,8 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
       return "Unexpected error occurred";
     }
   }
+  void reset() {
+    state = const VerifyOtpState();
+  }
+
 }

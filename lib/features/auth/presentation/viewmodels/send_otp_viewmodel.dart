@@ -72,7 +72,7 @@ class SendOtpViewModel extends StateNotifier<SendOtpState> {
     } catch (e) {
       state = state.copyWith(
         status: SendOtpStatus.error,
-        errorMessage: e.toString(),
+        errorMessage: _mapExceptionToMessage(e),
       );
     }
   }

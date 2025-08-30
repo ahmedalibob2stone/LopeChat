@@ -70,15 +70,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (next.status == SendOtpStatus.sent) {
         AppSnackbar.showSuccess(context, "OTP sent successfully!");
-        Navigator.pushNamed(
-          context,
-          PageConst.otp_screan,
-          arguments: {
-            'phoneNumber': '+${selectedCountry!.phoneCode}${phoneController.text.trim()}',
-            'isFromAddAccount': false,
-          },
-        );
+
+        // ثم انتظر 500 مللي ثانية قبل التنقل
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.pushNamed(
+            context,
+            PageConst.otp_screan,
+            arguments: {
+              'phoneNumber': '+${selectedCountry!.phoneCode}${phoneController.text.trim()}',
+              'isFromAddAccount': false,
+            },
+          );
+        });
       }
+
     });
 
 
