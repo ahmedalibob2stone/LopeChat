@@ -46,16 +46,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void sendOtp() {
     final phoneNumber = phoneController.text.trim();
-
     if (selectedCountry == null || phoneNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid phone number')),
-      );
+      AppSnackbar.showError(context, 'Please enter a valid phone number');
       return;
     }
 
     final fullPhone = '+${selectedCountry!.phoneCode}$phoneNumber';
-
     ref.read(sendOtpViewModelProvider.notifier).sendOtp(fullPhone);
   }
 
@@ -65,14 +61,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen<SendOtpState>(sendOtpViewModelProvider, (previous, next) {
       if (next.status == SendOtpStatus.error && next.errorMessage != null) {
-        AppSnackbar.showError(context, next.errorMessage!);
+        if (previous?.errorMessage != next.errorMessage) {
+          AppSnackbar.showError(context, next.errorMessage!);
+        }
       }
 
       if (next.status == SendOtpStatus.sent) {
-        AppSnackbar.showSuccess(context, "OTP sent successfully!");
-
-        // ثم انتظر 500 مللي ثانية قبل التنقل
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 300), () {
           Navigator.pushNamed(
             context,
             PageConst.otp_screan,
@@ -83,114 +78,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         });
       }
-
     });
-
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top,
-            ),
-            child: IntrinsicHeight(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+              Center(
+                child: Text(
+                  "Enter your phone number",
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.06,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+              Text(
+                "ChatLope will need to verify your phone number",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+              Row(
                 children: [
-                  // Header
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                  Center(
-                    child: Text(
-                      "Enter your phone number",
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.06,
-                        fontWeight: FontWeight.bold,
+                  InkWell(
+                    onTap: selectCountry,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          if (selectedCountry != null)
+                            Text(
+                              '${countryFlag(selectedCountry!.countryCode)} +${selectedCountry!.phoneCode}',
+                              style: const TextStyle(fontSize: 16),
+                            )
+                          else
+                            const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        ],
                       ),
                     ),
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-
-                  // Description
-                  Text(
-                    "ChatLope will need to verify your phone number",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FormContainerWidget(
+                      controller: phoneController,
+                      hintText: 'Phone number',
+                      inputType: TextInputType.number,
                     ),
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-
-                  // Phone input row with country picker icon
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: selectCountry,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade400),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              if (selectedCountry != null)
-                                Text(
-                                  '${countryFlag(selectedCountry!.countryCode)} +${selectedCountry!.phoneCode}',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              else
-                                const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.grey,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: FormContainerWidget(
-                          controller: phoneController,
-                          hintText: 'Phone number',
-                          inputType: TextInputType.number,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-
-                  // Send OTP button / loading
-                  if (state.status == SendOtpStatus.sending)
-                    const Center(child: CircularProgressIndicator())
-                  else
-                    ButtonContainerWidget(
-                      color: kkPrimaryColor,
-                      text: state.canResend
-                          ? 'Send OTP'
-                          : 'Wait ${state.waitingDuration != null ? _formatDuration(state.waitingDuration!) : ''}',
-                      onTapListener: state.canResend ? sendOtp : null,
-                    ),
-
-                  // Spacer to push content up on small screens
-                  const Spacer(),
                 ],
               ),
-            ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+              state.status == SendOtpStatus.sending
+                  ? const Center(child: CircularProgressIndicator())
+                  : ButtonContainerWidget(
+                color: kkPrimaryColor,
+                text: 'Send OTP',
+                onTapListener: sendOtp,
+              ),
+            ],
           ),
         ),
       ),
     );
-  }
-
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
   }
 }

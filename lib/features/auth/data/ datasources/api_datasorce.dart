@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../model/verify_otp_response_model.dart';
+
 class AuthApiDataSource {
   final String baseUrl;
 
@@ -20,12 +22,11 @@ class AuthApiDataSource {
       return true;
     } else {
       final data = jsonDecode(response.body);
-      // إرجاع رسالة الخطأ من السيرفر أو رسالة عامة
       throw Exception(data['error'] ?? 'Failed to send OTP');
     }
   }
 
-  Future<String?> verifyOtp(String phoneNumber, String otp) async {
+  Future<VerifyOtpResponse?> verifyOtp(String phoneNumber, String otp) async {
     final response = await http.post(
       Uri.parse('https://lopechat.onrender.com/auth/verify-otp'),
       headers: {'Content-Type': 'application/json'},
@@ -34,9 +35,10 @@ class AuthApiDataSource {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['token'];
+      return VerifyOtpResponse.fromJson(data);
+    } else {
+      return null;
     }
-    return null;
   }
 }
 
