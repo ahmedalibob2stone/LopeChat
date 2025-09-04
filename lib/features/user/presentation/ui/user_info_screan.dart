@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../common/widgets/Buttom_container.dart';
 import '../../../../constant.dart';
 import '../provider/vm/profile_view_model.dart';
-import '../viewmodel/updateing_profile_viewmodel.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);

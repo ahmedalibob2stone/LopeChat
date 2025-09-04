@@ -45,7 +45,7 @@ class SendOtpViewModel extends StateNotifier<SendOtpState> {
         _setError("Failed to send verification code. Please check your number.");
       }
     } catch (e) {
-      _setError(_mapExceptionToMessage(e));
+      _setError(e.toString());
     }
   }
 

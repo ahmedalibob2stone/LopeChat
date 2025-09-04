@@ -13,22 +13,13 @@ exports.sendOtp = async (req, res) => {
     return res.status(400).json({ error: 'Invalid phone number format' });
   }
 
-  const otp = process.env.TEST_MODE === 'true' ? '123456' : generateOTP();
+  const otp = generateOTP();
   console.log(`Generated OTP: ${otp} for number: ${phoneNumber}`);
 
   try {
-    // Store OTP in Redis
     await redisClient.setEx(phoneNumber, 60, otp);
 
-    if (process.env.TEST_MODE === 'true') {
-      return res.json({
-        success: true,
-        message: 'OTP mocked in test mode',
-        otp, // Return OTP directly for testing (optional)
-      });
-    }
 
-    // Production mode → send via Twilio
     const message = await twilioClient.messages.create({
       body: `Your verification code is: ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
