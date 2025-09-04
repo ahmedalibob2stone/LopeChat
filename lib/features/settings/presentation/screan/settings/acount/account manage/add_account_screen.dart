@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../constant.dart';
 import '../../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../../user/domain/usecases/provider/usecase/provider.dart';
+import '../../../../../../user/presentation/provider/usecases/get_curent_user_data_usecase_provider.dart';
+import '../../../../../../user/presentation/provider/usecases/get_user_by_id_once_usecase_provider.dart';
 
 
 
@@ -48,7 +49,7 @@ class AddAccountScreen extends ConsumerWidget {
   }
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final getCurrentUserUseCase = ref.read(getCurrentUserUseCaseProvider);
+    final getCurrentUserUseCase = ref.read(getCurrentUserDataUseCaseProvider);
 
     return FutureBuilder<UserEntity?>(
       future: getCurrentUserUseCase.call(),

@@ -15,7 +15,8 @@ import '../../../settings/presentation/provider/privacy/advanced/vm/advanced_pri
 import '../../../settings/presentation/provider/privacy/camera effect/vm/camera_affects_viewmodel_provider.dart';
 import '../../../settings/presentation/provider/privacy/last seen and online/vm/provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/user status/vm/provider.dart';
 import 'Bottomfileforchat.dart';
 import 'chat_list.dart';
@@ -50,7 +51,7 @@ class _MobileChatScreanState extends ConsumerState<MobileChatScrean> {
     userStatusVM.loadOnlineStatus(widget.uid);
 
     Future.microtask(() async {
-      final currentUser = ref.read(userStreamProvider).value;
+      final currentUser = ref.read(currentUserStreamProvider).value;
       if (currentUser != null) {
         final contacts = await ref.read(someProvider(widget.uid)).call();
         ref.read(lastSeenAndOnlineViewModelProvidering(widget.uid).notifier)
@@ -78,7 +79,7 @@ class _MobileChatScreanState extends ConsumerState<MobileChatScrean> {
     required bool isGroupChat,
     required bool isVideo,
   }) {
-    final userAsync = ref.read(userStreamProvider);
+    final userAsync = ref.read(currentUserStreamProvider);
     final cameraEffectsEnabled = ref.read(cameraEffectsViewModelProvider).isEnabled;
     final ipProtectionEnabled = ref.read(advancedPrivacyViewModelProvider).ipProtection;
 
@@ -182,7 +183,7 @@ class _MobileChatScreanState extends ConsumerState<MobileChatScrean> {
     final cameraEffectsEnabled = ref.watch(cameraEffectsViewModelProvider).isEnabled;
     final ipProtectionEnabled = ref.watch(advancedPrivacyViewModelProvider).ipProtection;
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid;
     final profileVisibilityAsync = currentUserId != null
         ? ref.watch(profilePhotoVisibilityProvider({
@@ -249,7 +250,7 @@ class _MobileChatScreanState extends ConsumerState<MobileChatScrean> {
                               builder: (context, ref, _) {
                                 final userStatusState = ref.watch(userStatusViewModelProvider);
                                 final lastSeenVM = ref.read(lastSeenAndOnlineViewModelProvidering(widget.uid).notifier);
-                                final currentUserAsync = ref.watch(userStreamProvider);
+                                final currentUserAsync = ref.watch(currentUserStreamProvider);
 
                                 return currentUserAsync.when(
                                   data: (currentUser) {

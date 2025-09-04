@@ -1,5 +1,5 @@
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/model/user_model/user_model.dart';
+import '../../../../../user/data/user_model/user_model.dart';
 import '../../../../domain/repository/privacy/block/block_privacy_repository.dart';
 import '../../../datasource/privacy/block/block_privacy_remote_datasource.dart';
 

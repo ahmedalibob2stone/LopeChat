@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:uuid/uuid.dart';
-import '../../../user/model/user_model/user_model.dart';
+import '../../../user/data/user_model/user_model.dart';
 import '../../../../storsge/repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../common/utils/utills.dart';

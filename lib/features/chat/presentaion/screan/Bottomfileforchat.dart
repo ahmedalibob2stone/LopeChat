@@ -17,8 +17,9 @@ import '../../../../constant.dart';
 import '../../../profile/data/model/block/local_blocked_massage.dart';
 import '../../../profile/presentation/provider/block/vm/local_blocked_massages_provider.dart';
 import '../../../profile/presentation/provider/block/vm/viewmodel_provider.dart';
-import '../../../user/model/user_model/user_model.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/data/user_model/user_model.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
 import '../widgets/Message_reply.dart';
 import 'package:extended_text_field/extended_text_field.dart';
@@ -108,7 +109,7 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
   }
 
   Future<UserModel?> _getCurrentUserModel(BuildContext context) async {
-    final currentUserEntity = await ref.read(userStreamProvider.stream).first;
+    final currentUserEntity = await ref.read(currentUserStreamProvider.stream).first;
     if (currentUserEntity == null) {
       ShowSnakBar(context: context, content: 'لم يتم تحميل بيانات المستخدم');
       return null;

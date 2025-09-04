@@ -49,9 +49,11 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
       this._verifyOtpUseCase,
       this._signInWithTokenUseCase,
       this._sendOtpUseCase)
-      : super(const VerifyOtpState());
+      : super(const VerifyOtpState()){
+    // بدء عداد resend OTP عند فتح الشاشة مباشرة
+    _startResendCountdown();
+  }
 
-  // ==================== Helper لتقليل التكرار ====================
   void _setError(String message) {
     if (state.status != VerifyOtpStatus.error || state.errorMessage != message) {
       state = state.copyWith(status: VerifyOtpStatus.error, errorMessage: message);
@@ -71,7 +73,6 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
     return "Unexpected error occurred";
   }
 
-  // ==================== Verify OTP ====================
   Future<void> verifyOtp(String phoneNumber, String otp) async {
     final connected = await CheckInternet.isConnected();
     if (!connected) {
@@ -90,7 +91,6 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
       final result = await _verifyOtpUseCase.execute(phoneNumber, otp);
 
       if (result == null || result.token == null) {
-        // فقط ابدأ العد إذا الاستدعاء ناجح والخادم رفض الكود
         state = state.copyWith(
           status: VerifyOtpStatus.error,
           errorMessage: "Wrong verification code",
@@ -106,7 +106,6 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
     }
   }
 
-  // ==================== Resend OTP ====================
   Future<void> resendOtp(String phoneNumber) async {
     if (state.attemptsLeft <= 0) {
       _setError("Maximum resend attempts reached");
@@ -129,7 +128,6 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
     }
   }
 
-  // ==================== Countdown Timer ====================
   void _startResendCountdown() {
     state = state.copyWith(resendSeconds: 60, canResendOtp: false, errorMessage: null);
     _resendTimer?.cancel();
@@ -145,7 +143,6 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
     });
   }
 
-  // ==================== Reset ====================
   void reset() {
     state = const VerifyOtpState();
   }

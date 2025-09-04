@@ -35,7 +35,6 @@ class SendOtpViewModel extends StateNotifier<SendOtpState> {
       _setError("No internet connection. Please try again.");
       return;
     }
-
     state = state.copyWith(status: SendOtpStatus.sending, errorMessage: null);
 
     try {

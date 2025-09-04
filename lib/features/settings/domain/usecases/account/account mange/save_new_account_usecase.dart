@@ -1,6 +1,6 @@
 
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/model/user_model/user_model.dart';
+import '../../../../../user/data/user_model/user_model.dart';
 import '../../../repository/account/account manage/auth_local_repository.dart';
 
 

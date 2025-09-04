@@ -13,7 +13,7 @@ import '../../../../common/enums/enum_massage.dart';
 import '../../../../storsge/repository.dart';
 import '../../../group/data/model/group/group.dart';
 import '../../../settings/presentation/provider/privacy/advanced/vm/advanced_privacy_viewmodel_provider.dart';
-import '../../../user/model/user_model/user_model.dart';
+import '../../../user/data/user_model/user_model.dart';
 
 import '../model/contact/chat_contact.dart';
 import '../model/massage/massage_model.dart';

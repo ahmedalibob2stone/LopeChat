@@ -4,7 +4,7 @@ import '../../../../../../../common/Provider/profile_phote_visiblity_provider.da
 import '../../../../../../contact/presentation/provider/vm/get_app_contact_viewmodel_provider.dart';
 import '../../../../../../contact/presentation/viewmodel/get_app_contacts_viewmodel.dart';
 import '../../../../../../profile/presentation/provider/block/vm/viewmodel_provider.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 
 class SelectContactToBlockScreen extends ConsumerStatefulWidget {
   const SelectContactToBlockScreen({super.key});
@@ -26,7 +26,7 @@ class _SelectContactToBlockScreenState extends ConsumerState<SelectContactToBloc
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(getAppContactsViewModelProvider);
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
 
     ref.listen<ContactsState>(getAppContactsViewModelProvider, (previous, next) {
       if (next.status == ContactsStatus.error) {

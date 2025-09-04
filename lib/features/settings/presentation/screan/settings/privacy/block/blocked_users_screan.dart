@@ -7,7 +7,7 @@ import '../../../../../../../common/Provider/profile_phote_visiblity_provider.da
 import '../../../../../../profile/presentation/provider/block/vm/viewmodel_provider.dart';
 import '../../../../../../profile/presentation/viewmodel/blocking/block_user_viewmodel.dart';
 import '../../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import 'empty_blocked_screan.dart';
 
 class BlockedUsersScreen extends ConsumerWidget {
@@ -17,7 +17,7 @@ class BlockedUsersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(blockUserViewModelProvider);
     final viewModel = ref.read(blockUserViewModelProvider.notifier);
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
 
     return Scaffold(
       appBar: AppBar(

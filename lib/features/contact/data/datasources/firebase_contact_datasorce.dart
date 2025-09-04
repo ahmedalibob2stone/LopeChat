@@ -6,7 +6,7 @@ import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../user/model/user_model/user_model.dart';
+import '../../../user/data/user_model/user_model.dart';
 
 class FirebaseContactDataSource{
   final FirebaseFirestore firestore;

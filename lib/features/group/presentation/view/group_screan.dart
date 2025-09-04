@@ -9,7 +9,8 @@ import '../../../../common/widgets/Error_Screan.dart';
 import '../../../../common/widgets/Loeading.dart';
 import '../../../contact/presentation/provider/vm/get_app_contact_viewmodel_provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 
 final selectedGroupContacts = StateProvider<List<Contact>>((ref) => []);
 
@@ -50,7 +51,7 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserAsync = ref.watch(userStreamProvider);
+    final currentUserAsync = ref.watch(currentUserStreamProvider);
     final contactsAsync = ref.watch(getContactsProvider);
 
     final screenWidth = MediaQuery.of(context).size.width;

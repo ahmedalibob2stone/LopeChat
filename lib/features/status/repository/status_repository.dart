@@ -9,7 +9,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import '../../../common/utils/utills.dart';
 
 import '../../../storsge/repository.dart';
-import '../../user/model/user_model/user_model.dart';
+import '../../user/data/user_model/user_model.dart';
 import '../data/model/status/status.dart';
 
 final statusRepositoryProvider = Provider((ref) => StatusRepository(

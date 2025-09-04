@@ -1,7 +1,7 @@
 
 
 
-import '../../../../user/model/user_model/user_model.dart';
+import '../../../../user/data/user_model/user_model.dart';
 
 abstract class BlockUserRepository {
   Future<void> blockUser({

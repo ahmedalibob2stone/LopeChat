@@ -8,8 +8,10 @@ import '../../../../../common/widgets/Error_Screan.dart';
 import '../../../../../common/widgets/Loeading.dart';
 import '../../../../../constant.dart';
 import '../../../contact/presentation/provider/vm/get_app_contact_viewmodel_provider.dart';
-import '../../../user/domain/usecases/provider/get_user_data_by_id_provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
+import '../../../user/presentation/provider/stream_provider/user_data_provider.dart';
 import '../provider/viewmodel/provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
 final selectedUser = StateProvider<List<Contact>>((ref) => []);
@@ -91,7 +93,7 @@ class _GroupMemberState extends ConsumerState<GroupMember> {
     final double titleFont = screenWidth * 0.05;
     final double subTitleFont = screenWidth * 0.03;
 
-    final currentUser = ref.watch(userStreamProvider).value;
+    final currentUser = ref.watch(currentUserStreamProvider).value;
     final currentUserId = currentUser?.uid;
 
     final groupState = ref.watch(groupInformationViewModelProvider(widget.groupId));
@@ -148,7 +150,7 @@ class _GroupMemberState extends ConsumerState<GroupMember> {
           itemBuilder: (context, index) {
             final memberId = group.membersUid[index];
 
-            return ref.watch(userDataProvider(memberId)).when(
+            return ref.watch(userByIdStreamProvider(memberId)).when(
               loading: () => const ListTile(title: Text("...")),
               error: (e, _) => ListTile(title: Text("Error: $e")),
               data: (user) {
@@ -156,7 +158,7 @@ class _GroupMemberState extends ConsumerState<GroupMember> {
                 final isMemberAdmin = group.adminUids.contains(user.uid);
 
 
-                final currentUser = ref.watch(userStreamProvider).asData?.value;
+                final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
                 final currentUserId = currentUser?.uid;
 
                 final ownerContactUids = <String>[];

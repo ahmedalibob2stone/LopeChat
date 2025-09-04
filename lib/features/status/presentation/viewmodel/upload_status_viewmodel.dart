@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../domain/usecases/upload_status_usecase.dart';
 
 class UploadStatusState {
@@ -40,7 +41,7 @@ class UploadStatusViewModel extends StateNotifier<UploadStatusState> {
     required File file,
     required String message,
   }) async {
-    final userAsync = ref.read(userStreamProvider);
+    final userAsync = ref.read(currentUserStreamProvider);
 
     userAsync.whenData((user) async {
       if (user == null) {

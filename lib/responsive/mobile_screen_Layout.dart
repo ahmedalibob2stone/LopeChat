@@ -13,7 +13,6 @@ import '../features/chat/presentaion/provider/chat_contact/viewmodel/provider.da
 import '../features/chat/presentaion/provider/chat_group/viewmodel/provider.dart';
 import '../features/chat/presentaion/screan/contact_list.dart';
 import '../features/status/presentation/screan/status_contacts_screan.dart';
-import '../features/user/ui/user_lifecycle_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -33,7 +32,6 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
   bool isShowUser = false;
   late TabController tabController;
   final TextEditingController searchController = TextEditingController();
-  late final UserLifecycleManager lifecycleManager;
 
   Set<SelectedChat> selectedChats = {};
 
@@ -43,7 +41,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     WidgetsBinding.instance.addObserver(this);
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(_handleTabIndex);
-    lifecycleManager = UserLifecycleManager(ref)..init();
+
   }
 
   void clearSearch() {
@@ -60,13 +58,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     tabController.removeListener(_handleTabIndex);
     tabController.dispose();
     searchController.dispose();
-    lifecycleManager.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    lifecycleManager.handleAppLifecycle(state);
-  }
+
 
   void _handleTabIndex() {
     setState(() {});

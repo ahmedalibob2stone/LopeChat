@@ -42,7 +42,7 @@ class PageConst{
   static const  String editProfilePage="editProfilePage";
   static const  String LoginScrean="Login_Screan";
 static const  String otp_screan="OTP_Screan";
-  static const  String user_information="User_information";
+  static const  String ProfileScreen="ProfileScreen";
   static const  String ContactsScrean="ContactsScrean";
   static const  String mobileChatScrean="MobileChatScrean";
   static const  String status="SelectStatusScrean";

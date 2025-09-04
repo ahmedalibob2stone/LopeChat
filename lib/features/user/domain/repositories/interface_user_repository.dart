@@ -1,62 +1,34 @@
 import 'dart:io';
-
-import '../../model/user_model/user_model.dart';
 import '../entities/user_entity.dart';
 
+/// واجهة (Interface) مسؤولة عن تعريف جميع العمليات المتعلقة بالمستخدم.
+/// كل Repository في Data Layer يجب أن يطبق هذه الواجهة.
 abstract class IUserRepository {
-  Stream<UserEntity?> myData();
-  /// Get current user data
+  /// جلب بيانات المستخدم الحالي مرة واحدة
   Future<UserEntity?> getCurrentUserData();
-  /// Get stream of current user
 
+  /// Stream لمتابعة بيانات المستخدم الحالي
+  Stream<UserEntity?> myData();
 
-  /// Get stream of another user by ID
-  Stream<UserEntity> userData(String userId);
+  /// Stream لمتابعة بيانات مستخدم محدد بالـ UID
+  Stream<UserEntity> getUserById(String uid);
 
-  /// Save user data to Firebase
+  /// جلب بيانات مستخدم محدد مرة واحدة
+  Future<UserEntity> getUserByIdOnce(String uid);
+
+  /// حفظ بيانات المستخدم في Firebase
   Future<void> saveUserDatetoFirebase({
-
     required String name,
     required File? profile,
     required String statu,
   });
-  Stream<UserEntity> getUserById(String uid);
 
+  /// تحديث الاسم
+  Future<void> updateUserName(String name);
 
+  /// تحديث الحالة
+  Future<void> updateUserStatu(String status);
 
-  /// Set user online/offline state
-  Future<void> setUserState(String isOnline);
-
-  /// Update user status message
-  Future<void> addStatus(String status);
-
-  /// Update user name
-  Future<void> updateName(String name);
-
-  /// Update user profile image url
-  Future<void> updateProfileImageUrl(String photoUrl);
-
-  /// Upload user profile image to Firebase
-  Future<String> uploadProfileImage(File file);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  Future<void> updateUserName(String name) async {}
-  Future<void> updateUserStatus(String status) async {}
-  Future<void> updateUserProfilePicture(File file) async {}
-  Future<UserEntity> getUserByIdOnce(String uid);
-  Future<String?> getCurrentUserId();
-
-
+  /// تحديث صورة البروفايل
+  Future<void> updateUserProfilePicture(File file);
 }

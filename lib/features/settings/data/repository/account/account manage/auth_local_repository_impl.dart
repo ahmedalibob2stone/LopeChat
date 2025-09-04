@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/model/user_model/user_model.dart';
+import '../../../../../user/data/user_model/user_model.dart';
 import '../../../../domain/repository/account/account manage/auth_local_repository.dart';
 import '../../../datasource/account/account manage/local_auth_data_source.dart dart.dart';
 

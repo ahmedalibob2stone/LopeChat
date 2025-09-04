@@ -3,7 +3,7 @@ import 'dart:io';
 import '../../../../common/Provider/Message_reply.dart';
 import '../../../../common/enums/enum_massage.dart';
 import '../../../user/domain/entities/user_entity.dart';
-import '../../../user/model/user_model/user_model.dart';
+import '../../../user/data/user_model/user_model.dart';
 import '../../domain/repository/chat_message_repository.dart';
 import '../datasorce/chat_massage_remote_datasource.dart';
 import '../model/massage/massage_model.dart';

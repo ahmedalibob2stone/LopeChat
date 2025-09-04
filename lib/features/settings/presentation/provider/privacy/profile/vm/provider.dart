@@ -1,6 +1,8 @@
+
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../../user/domain/usecases/provider/get_user_data_by_id_provider.dart';
+import '../../../../../../user/presentation/provider/usecases/get_curent_user_id_usecase_provider.dart';
 import '../../../../viewmodel/privacy/profile/privacy_profile_viewmodel.dart';
 import '../usecases/get_profile_privacy_usecase_provider.dart';
 import '../usecases/update_profile_privacy_usecase_provider.dart';

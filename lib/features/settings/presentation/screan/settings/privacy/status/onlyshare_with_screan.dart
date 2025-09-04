@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../common/Provider/profile_phote_visiblity_provider.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/privacy/statu/vm/status_privascy_viewmodel.dart';
 import '../../../../viewmodel/privacy/statu/status_privacy_viewmodel.dart';
 
@@ -49,7 +49,7 @@ class _ShareWithOnlyScreenState extends ConsumerState<ShareWithOnlyScreen> {
     final state = ref.watch(statusPrivacyProvider);
     final vm = ref.read(statusPrivacyProvider.notifier);
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid ?? '';
 
     final contacts = state.filteredContacts;

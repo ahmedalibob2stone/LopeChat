@@ -18,7 +18,7 @@ exports.sendOtp = async (req, res) => {
 
   try {
     // Store OTP in Redis
-    await redisClient.setEx(phoneNumber, 300, otp);
+    await redisClient.setEx(phoneNumber, 60, otp);
 
     if (process.env.TEST_MODE === 'true') {
       return res.json({

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../profile/presentation/provider/report/vm/provider.dart';
 import '../../../../../../profile/presentation/viewmodel/report/get_report_vm.dart';
-import '../../../../../../user/domain/usecases/provider/get_user_data_by_id_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
+import '../../../../../../user/presentation/provider/stream_provider/user_data_provider.dart';
 import '../../../../provider/account/report/viewmodel/provider.dart';
 
 
@@ -119,8 +120,8 @@ class AccountReportScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final report = reports[index];
 
-                final reporterDataAsync = ref.watch(userDataProvider(report.reporterUserId));
-                final reportedDataAsync = ref.watch(userDataProvider(report.reportedUserId));
+                final reporterDataAsync = ref.watch(userByIdStreamProvider(report.reporterUserId));
+                final reportedDataAsync = ref.watch(userByIdStreamProvider(report.reportedUserId));
 
                 return reporterDataAsync.when(
                   data: (reporterUser) {

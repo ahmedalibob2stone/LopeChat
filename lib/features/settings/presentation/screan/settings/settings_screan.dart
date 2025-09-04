@@ -2,7 +2,7 @@
   import 'package:flutter_riverpod/flutter_riverpod.dart';
 
   import '../../../../../constant.dart';
-import '../../../../user/provider/get_userdata_provider.dart';
+import '../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 
   class SettingsScreen extends ConsumerWidget {
     const SettingsScreen({Key? key}) : super(key: key);
@@ -42,7 +42,7 @@ import '../../../../user/provider/get_userdata_provider.dart';
     }
 
     Widget _buildUserHeader(BuildContext context, ref) {
-      final userAsync = ref.watch(userStreamProvider);
+      final userAsync = ref.watch(currentUserStreamProvider);
 
       return userAsync.when(
         data: (user) {

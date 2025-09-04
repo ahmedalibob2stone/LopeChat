@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../constant.dart';
-import '../../../../../../user/provider/user_data_by_id_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/get_user_data_by_id_stream_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/account/account manage/vm/provider.dart';
 
 
@@ -11,7 +12,7 @@ class AddAccountBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUserAsync = ref.watch(currentUserViewModelProvider);
+    final currentUserAsync = ref.watch(currentUserStreamProvider );
     final accountsAsync = ref.watch(accountManagerViewModelProvider);
 
     return currentUserAsync.when(
@@ -28,7 +29,7 @@ class AddAccountBottomSheet extends ConsumerWidget {
               const SizedBox(height: 20),
               CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage(currentUser.profile),
+                backgroundImage: NetworkImage(currentUser!.profile),
               ),
               const SizedBox(height: 10),
               Text(currentUser.name, style: const TextStyle(fontSize: 16)),

@@ -5,15 +5,16 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
 import '../../../settings/presentation/provider/privacy/camera effect/vm/camera_affects_viewmodel_provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/viewmode/provider.dart';
 import 'call_screan.dart';
 import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 
 class CallListScreen extends ConsumerWidget {
-  final bool  isGroupChat;
-  
-  const CallListScreen({ required this.isGroupChat,Key? key}) : super(key: key);
+  final bool isGroupChat;
+
+  const CallListScreen({required this.isGroupChat, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,8 +23,6 @@ class CallListScreen extends ConsumerWidget {
     final cameraEffectsEnabled = ref.watch(cameraEffectsEnabledProvider);
     final ipProtectionEnabled = ref.watch(ipProtectionEnabledProvider);
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
-    final currentUserId = currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -39,32 +38,31 @@ class CallListScreen extends ConsumerWidget {
         itemCount: callState.callHistory.length,
         itemBuilder: (context, index) {
           final call = callState.callHistory[index];
+          final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
+          final currentUserId = currentUser?.uid;
+          final userCallerAsync = (call.callerId.isNotEmpty)
+              ? ref.watch(userByIdStreamProvider(call.callerId))
+              : AsyncValue.data(null);
 
-          final profileVisibilityAsync = (currentUserId != null)
-              ? ref.watch(profilePhotoVisibilityProvider({
-            'currentUserId': currentUserId,
-            'otherUserId': call.callerId,
-          }))
-              : AsyncValue.data(false);
-
-          return profileVisibilityAsync.when(
+          return userCallerAsync.when(
             loading: () => const ListTile(
               title: Text("Loading..."),
               leading: CircularProgressIndicator(),
             ),
             error: (error, _) => ListTile(
               title: Text("Error: $error"),
+              leading: const Icon(Icons.error),
             ),
-            data: (canViewPhoto) {
+            data: (user) {
+              final canViewPhoto = user != null && user.profile.isNotEmpty;
+
               return Slidable(
                 key: Key(call.callId),
                 endActionPane: ActionPane(
                   motion: const DrawerMotion(),
                   children: [
                     SlidableAction(
-                      onPressed: (_) {
-                        callController.deleteCall(call.callerId);
-                      },
+                      onPressed: (_) => callController.deleteCall(call.callerId),
                       icon: Icons.delete,
                       label: 'Delete',
                       backgroundColor: Colors.red,
@@ -75,17 +73,16 @@ class CallListScreen extends ConsumerWidget {
                   leading: CircleAvatar(
                     backgroundImage: canViewPhoto
                         ? NetworkImage(
-                       isGroupChat
-                            ? call.callerPic // صورة المجموعة إذا كانت جماعية
-                            : (currentUserId == call.callerId ? call.receiverPic : call.callerPic)
+                      isGroupChat
+                          ? call.callerPic
+                          : (currentUserId == call.callerId
+                          ? call.receiverPic
+                          : call.callerPic),
                     )
                         : null,
-                    child: canViewPhoto
-                        ? null
-                        : const Icon(Icons.person),
+                    child: canViewPhoto ? null : const Icon(Icons.person),
                   ),
-
-                  title: Text(call.callerName),
+                  title: Text(user?.name ?? call.callerName),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -104,12 +101,13 @@ class CallListScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CallScreen(
+                        builder: (_) => CallScreen(
                           channelId: call.callId,
                           call: call,
                           isGroupChat: isGroupChat,
                           cameraEffectsEnabled: cameraEffectsEnabled,
-                          ipProtectionEnabled: ipProtectionEnabled, isVideo: call.isVideo,
+                          ipProtectionEnabled: ipProtectionEnabled,
+                          isVideo: call.isVideo,
                         ),
                       ),
                     );

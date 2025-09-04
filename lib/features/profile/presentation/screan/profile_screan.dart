@@ -12,8 +12,10 @@ import '../../../chat/presentaion/provider/chat_config/viewmodel/provider.dart';
 import '../../../chat/presentaion/provider/user status/vm/provider.dart';
 import '../../../contact/presentation/provider/usecases/get_app_contacts_usecases_provider.dart';
 import '../../../settings/presentation/provider/privacy/last seen and online/vm/provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
-import '../../../user/provider/user_data_by_id_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
+import '../../../user/presentation/provider/stream_provider/user_by_id_provider.dart';
 import '../provider/block/vm/viewmodel_provider.dart';
 import '../provider/lock/viewmodel/provider.dart';
 import '../provider/report/vm/provider.dart';
@@ -95,7 +97,7 @@ class _ProfileChatState extends ConsumerState<ProfileChat> {
 
       // Load last seen & online data
       Future.microtask(() async {
-        final currentUser = ref.read(userStreamProvider).value;
+        final currentUser = ref.read(currentUserStreamProvider).value;
         if (currentUser != null) {
           final contacts = await ref.read(someProvider(widget.uid)).call();
           ref.read(lastSeenAndOnlineViewModelProvidering(widget.uid).notifier)
@@ -109,10 +111,10 @@ class _ProfileChatState extends ConsumerState<ProfileChat> {
 
   @override
   Widget build(BuildContext context) {
-    final userAsyncValue = ref.watch(userByIdProvider(widget.uid));
+    final userAsyncValue = ref.watch(userByIdStreamProvider(widget.uid));
     final disappearingState = ref.watch(disappearingMessagesViewModelProvider);
     final disappearingVM = ref.read(disappearingMessagesViewModelProvider.notifier);
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid;
 
     return Scaffold(
@@ -172,7 +174,7 @@ class _ProfileChatState extends ConsumerState<ProfileChat> {
                             builder: (context, ref, _) {
                               final userStatusState = ref.watch(userStatusViewModelProvider);
                               final lastSeenVM = ref.read(lastSeenAndOnlineViewModelProvidering(user.uid).notifier);
-                              final currentUserAsync = ref.watch(userStreamProvider);
+                              final currentUserAsync = ref.watch(currentUserStreamProvider);
 
                               return currentUserAsync.when(
                                 data: (currentUser) {

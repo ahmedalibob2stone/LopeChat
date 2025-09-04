@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../common/Provider/Message_reply.dart';
 import '../../../../../common/enums/enum_massage.dart';
-import '../../../../user/model/user_model/user_model.dart';
+import '../../../../user/data/user_model/user_model.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_file_message_usecase.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_gif_message_usecase.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_link_message_usecase.dart';

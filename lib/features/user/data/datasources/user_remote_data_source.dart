@@ -1,119 +1,93 @@
-  import 'dart:io';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-  import 'package:cloud_firestore/cloud_firestore.dart';
-  import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../storsge/repository.dart'; // فقط مسؤول عن تخزين الصور
+import '../user_model/user_model.dart';
 
-  import '../../../../storsge/repository.dart';
-  import '../../domain/entities/user_entity.dart';
-  import '../../model/user_model/user_model.dart';
+class UserRemoteDataSource {
+  final FirebaseFirestore firestore;
+  final FirebaseAuth auth;
+  final FirebaseStorageRepository storageRepository;
 
-    class UserRemoteDataSource {
-      final FirebaseFirestore fire  ;
-      final FirebaseAuth auth;
-      final FirebaseStorageRepository firebaseStorageRepository;
+  UserRemoteDataSource({
+    required this.firestore,
+    required this.auth,
+    required this.storageRepository,
+  });
 
-      UserRemoteDataSource({
-        required this.fire,
-        required this.auth,
-        required this.firebaseStorageRepository,
-      });
+  /// ✅ إرجاع UID الحالي
+  String? get currentUserId => auth.currentUser?.uid;
 
-      String? get currentUserId => auth.currentUser?.uid;
+  /// ✅ إرجاع DocumentSnapshot لليوزر الحالي (مرة واحدة)
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserDoc() async {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    return firestore.collection('users').doc(uid).get();
+  }
 
-
-      Future<DocumentSnapshot<Map<String, dynamic>>> getUserDoc() {
-      return fire.collection('users').doc(currentUserId).get();
-    }
-
-
-
-    Future<void> saveUserData(Map<String, dynamic> userMap) {
-      return fire.collection('users').doc(currentUserId).set(userMap);
-    }
-
-    Future<void> updateUserField(Map<String, dynamic> fields) {
-      return fire.collection('users').doc(currentUserId).update(fields);
-    }
-
-    Future<String> uploadProfileImage(File file) {
-      return firebaseStorageRepository.storeFiletofirstorage('Profile/$currentUserId', file);
-    }
-
-    Future<void> updateProfileImageUrl(String uid, String photoUrl) async {
-      await fire.collection('users').doc(uid).update({'profile': photoUrl});
-    }
-
-    Stream<UserEntity> getUserById(String uid) {
-      return fire.collection('users').doc(uid).snapshots().map(
-            (snapshot) => UserModel.fromMap(snapshot.data()!),
-      );
+  /// ✅ Stream ليوزر محدد
+  Stream<UserModel> getUserById(String uid) {
+    return firestore.collection('users').doc(uid).snapshots().map((snapshot) {
+      final data = snapshot.data();
+      if (data == null) {
+        throw Exception("User not found");
       }
-        Future<UserModel> getUserByIdOnce(String uid) async {
-          final snapshot = await fire.collection('users').doc(uid).get();
-          if (!snapshot.exists || snapshot.data() == null) {
-            throw Exception("User not found");
-          }
-          return UserModel.fromMap(snapshot.data()!);
-        }
+      return UserModel.fromMap(data);
+    });
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      Future<void> updateUserName(String name) async {
-        await fire.collection('users').doc(currentUserId).update({
-          'name': name,
-        });
-      }
-
-      Future<void> updateUserStatus(String status) async {
-        await fire.collection('users').doc(currentUserId).update({
-          'statu': status,
-        });
-      }
-
-      Future<void> updateUserProfilePicture(File file) async {
-        final imageUrl = await firebaseStorageRepository.storeFiletofirstorage(
-          'Profile/$currentUserId',
-          file,
-        );
-        await fire.collection('users').doc(currentUserId).update({
-          'profile': imageUrl,
-        });
-      }
-
-      Stream<DocumentSnapshot<Map<String, dynamic>>> userDocStream(String uid) {
-        return fire.collection('users').doc(uid).snapshots();
-      }
-      Future<String?> getCurrentUserId() async {
-        final uid = auth.currentUser?.uid;
-        if (uid == null || uid.isEmpty) {
-          throw Exception("User is not authenticated");
-        }
-        return uid;
-      }
-
-
+  /// ✅ إرجاع يوزر مرة واحدة
+  Future<UserModel> getUserByIdOnce(String uid) async {
+    final snapshot = await firestore.collection('users').doc(uid).get();
+    final data = snapshot.data();
+    if (!snapshot.exists || data == null) {
+      throw Exception("User not found");
     }
+    return UserModel.fromMap(data);
+  }
+
+  /// ✅ حفظ بيانات جديدة لليوزر
+  Future<void> saveUserData(UserModel user) async {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    await firestore.collection('users').doc(uid).set(user.toMap());
+  }
+
+  /// ✅ رفع صورة البروفايل فقط
+  Future<String> uploadProfileImage(File file) {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    return storageRepository.storeFiletofirstorage('Profile/$uid', file);
+  }
+
+  /// ✅ تحديث الاسم
+  Future<void> updateUserName(String name) async {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    await firestore.collection('users').doc(uid).update({'name': name});
+  }
+
+  /// ✅ تحديث الحالة
+  Future<void> updateUserStatus(String status) async {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    await firestore.collection('users').doc(uid).update({'statu': status});
+  }
+
+  /// ✅ تحديث صورة البروفايل
+  Future<void> updateUserProfilePicture(File file) async {
+    final uid = currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
+    final imageUrl = await storageRepository.storeFiletofirstorage(
+      'Profile/$uid',
+      file,
+    );
+    await firestore.collection('users').doc(uid).update({'profile': imageUrl});
+  }
+
+  /// ✅ Stream لمستند اليوزر (DocumentSnapshot)
+  Stream<DocumentSnapshot<Map<String, dynamic>>> userDocStream(String uid) {
+    return firestore.collection('users').doc(uid).snapshots();
+  }
+}

@@ -1,5 +1,5 @@
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/model/user_model/user_model.dart';
+import '../../../../../user/data/user_model/user_model.dart';
 
 abstract class BlockPrivacyRemoteDataSource {
   Future<void> blockUser(UserModel user,String uid);

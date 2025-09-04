@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/model/user_model/user_model.dart';
+import '../../../../../user/data/user_model/user_model.dart';
 import 'block_privacy_remote_datasource.dart';
 
 class BlockPrivacyRemoteDataSourceImpl implements BlockPrivacyRemoteDataSource {

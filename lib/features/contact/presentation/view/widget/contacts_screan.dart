@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../../common/utils/colors.dart';
 import '../../../../user/domain/entities/user_entity.dart';
-import '../../../../user/provider/get_userdata_provider.dart';
+import '../../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 
 class ContactCard extends ConsumerWidget {
   final UserEntity contactSource;
@@ -24,7 +25,7 @@ class ContactCard extends ConsumerWidget {
     final double leadingRadius = screenWidth * 0.1;
     final double fontSize = screenWidth * 0.04;
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid ?? '';
 
     if (currentUserId.isEmpty) {

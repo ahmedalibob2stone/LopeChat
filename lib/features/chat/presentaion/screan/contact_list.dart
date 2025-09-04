@@ -11,7 +11,8 @@ import '../../../../constant.dart';
 
 import '../../../contact/presentation/provider/vm/get_app_contact_viewmodel_provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/chat_contact/viewmodel/provider.dart';
 import '../provider/chat_group/viewmodel/provider.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
@@ -182,7 +183,7 @@ class _ContactListState extends ConsumerState<ContactList> {
       double timeFontSize,
       ) {
     final contactState = ref.watch(chatContactViewModelProvider);
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid;
 
     if (contactState.isLoading) return const Loeading();

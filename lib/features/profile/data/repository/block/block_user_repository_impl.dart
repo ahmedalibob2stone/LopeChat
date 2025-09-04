@@ -1,6 +1,6 @@
 
 
-import '../../../../user/model/user_model/user_model.dart';
+import '../../../../user/data/user_model/user_model.dart';
 import '../../../domain/repository/block/block_user_repository.dart';
 import '../../datasource/block/block_user_remote_datasorce.dart';
 

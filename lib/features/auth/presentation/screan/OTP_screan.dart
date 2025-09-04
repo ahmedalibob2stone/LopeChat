@@ -96,25 +96,58 @@ class VerifyScreen extends ConsumerWidget {
           verifyOtpViewModelProvider.select((s) => s.canResendOtp),
         );
 
-        return seconds > 0
-            ? Text(
-          "Resend code in ${seconds}s",
-          style: const TextStyle(color: Colors.grey),
-        )
-            : TextButton(
-          onPressed: canResend
-              ? () => ref
-              .read(verifyOtpViewModelProvider.notifier)
-              .resendOtp(phoneNumber)
-              : null,
-          child: const Text(
-            "Resend OTP",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: kkPrimaryColor,
-            ),
-          ),
-        );
+        if (seconds > 0) {
+          // أثناء العد التنازلي
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Resend code in ${seconds}s",
+                style: TextStyle(
+                  color: Colors.purple, // اللون البنفسجي للعداد
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "You can enter the code. After 60 seconds, it will expire.",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          );
+        } else {
+          // بعد انتهاء العد
+          return Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "Code expired or not received?",
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: canResend
+                    ? () => ref
+                    .read(verifyOtpViewModelProvider.notifier)
+                    .resendOtp(phoneNumber)
+                    : null,
+                child: Text(
+                  "Resend Code",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: canResend ? kkPrimaryColor : Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
       },
     );
   }
@@ -131,7 +164,7 @@ class VerifyScreen extends ConsumerWidget {
         if (!isVerifying) return const SizedBox();
 
         return const Padding(
-          padding: EdgeInsets.only(top: 16.0),
+          padding: EdgeInsets.only(top: 69.0),
           child: CircularProgressIndicator(),
         );
       },
@@ -157,7 +190,7 @@ class VerifyScreen extends ConsumerWidget {
            Future.microtask(() {
              Navigator.pushNamedAndRemoveUntil(
                context,
-               PageConst.user_information,
+               PageConst.ProfileScreen,
                    (route) => false,
              );
 
@@ -186,7 +219,7 @@ class VerifyScreen extends ConsumerWidget {
               SizedBox(height: MediaQuery.of(context).size.height * 0.03),
               _buildOtpInput(context, ref),
               _buildVerifyingIndicator(),
-              _buildErrorMessage(),
+            //  _buildErrorMessage(),
               const SizedBox(height: 16),
               _buildResendSection(context, ),
             ],

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../../../../common/widgets/Loeading.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/privacy/last seen and online/vm/provider.dart';
 
 class ExcludedContactsLastSeenAndOnlineScreen extends ConsumerWidget {
@@ -23,7 +23,7 @@ class ExcludedContactsLastSeenAndOnlineScreen extends ConsumerWidget {
     const double fontSize = 16.0;
 
     // مستخدم التطبيق الحالي (لتحديد ال uid)
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid;
 
     return Scaffold(

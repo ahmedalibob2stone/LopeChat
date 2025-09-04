@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../../user/provider/vm/provider.dart';
-import '../../../../../user/viewmodel/update_profile_image_viewmodel.dart';
+import '../../../../../user/presentation/provider/vm/update_profile_view_model.dart';
+import '../../../../../user/presentation/viewmodel/updateing_profile_viewmodel.dart';
+
 
 
 

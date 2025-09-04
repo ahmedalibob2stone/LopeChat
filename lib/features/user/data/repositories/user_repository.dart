@@ -1,177 +1,105 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../storsge/repository.dart';
 import '../../domain/entities/user_entity.dart';
-import '../../model/user_model/user_model.dart';
 import '../../domain/repositories/interface_user_repository.dart';
 import '../datasources/user_remote_data_source.dart';
+import '../user_model/user_model.dart';
 
+class UserRepository implements IUserRepository {
+  final UserRemoteDataSource remoteDataSource;
 
-final userSubRepositoryProvider = Provider<UserRemoteDataSource>((ref) {
-  final storageRepo = ref.read(FirebaseStorageRepositoryProvider);
-  return UserRemoteDataSource(
-    fire: FirebaseFirestore.instance,
-    auth: FirebaseAuth.instance,
-    firebaseStorageRepository: storageRepo,
-  );
-});
+  UserRepository({required this.remoteDataSource});
 
-final userRepositoryProvider = Provider<IUserRepository>((ref) {
-  final subRepo = ref.read(userSubRepositoryProvider);
-  return UserRepository(subRepository: subRepo, firestore: FirebaseFirestore.instance);
-});
-
-
-
-class UserRepository  implements IUserRepository {
-  FirebaseFirestore firestore;
-  final UserRemoteDataSource subRepository;
-
-  UserRepository({required this.subRepository,required this.firestore});
-
+  /// ✅ بيانات المستخدم الحالي (مرة واحدة)
   @override
-  Future<UserModel?> getCurrentUserData() async {
+  Future<UserEntity?> getCurrentUserData() async {
     try {
-      final doc = await subRepository.getUserDoc();
+      final doc = await remoteDataSource.getUserDoc();
       final data = doc.data();
-      return data != null ? UserModel.fromMap(data) : null;
+      if (data == null) return null;
+      return UserModel.fromMap(data).toEntity();
     } catch (e) {
-      print('Error: $e');
+      print("Error in getCurrentUserData: $e");
       return null;
     }
   }
-  Stream<UserEntity?> myData() {
-    final uid = subRepository.currentUserId;
 
+  /// ✅ Stream لبيانات المستخدم الحالي
+  @override
+  Stream<UserEntity?> myData() {
+    final uid = remoteDataSource.currentUserId;
     if (uid == null || uid.isEmpty) {
       return Stream.value(null);
     }
 
-    return subRepository.userDocStream(uid)
-        .map((doc) {
-      final map = doc.data();
-      if (map == null) return null;
-      final model = UserModel.fromMap(map);
-      return model.toEntity();
-    })
-        .handleError((error) {
-      print('Error in myData(): $error');
+    return remoteDataSource.userDocStream(uid).map((doc) {
+      final data = doc.data();
+      if (data == null) return null;
+      return UserModel.fromMap(data).toEntity();
     });
   }
 
-
-
-
-  @override
-  Stream<UserModel> userData(String userId) {
-
-    return subRepository.userDocStream(userId).map(
-          (event) => UserModel.fromMap(event.data()!),
-    );
-  }
-
+  /// ✅ Stream لمستخدم معين بالـ UID
   @override
   Stream<UserEntity> getUserById(String uid) {
-    return subRepository.getUserById(uid);
+    return remoteDataSource.getUserById(uid).map((model) => model.toEntity());
   }
 
+  /// ✅ بيانات مستخدم معين (مرة واحدة)
+  @override
+  Future<UserEntity> getUserByIdOnce(String uid) async {
+    final model = await remoteDataSource.getUserByIdOnce(uid);
+    return model.toEntity();
+  }
+
+  /// ✅ حفظ بيانات جديدة في Firebase
   @override
   Future<void> saveUserDatetoFirebase({
-
     required String name,
     required File? profile,
     required String statu,
   }) async {
+    final uid = remoteDataSource.currentUserId;
+    if (uid == null) throw Exception("User not authenticated");
 
-      final uid = subRepository.currentUserId!;
-      String photoUrl =
-          'https://upload.wikimedia.org/wikipedia/commons/5/5f/Alberto_conversi_profile_pic';
+    String photoUrl =
+        "https://upload.wikimedia.org/wikipedia/commons/5/5f/Alberto_conversi_profile_pic";
 
-      if (profile != null) {
-        photoUrl = await subRepository.uploadProfileImage(profile);
-      }
-
-      var user = UserModel(
-        name: name,
-        uid: uid,
-        profile: photoUrl,
-        isOnline: '',
-        phoneNumber: FirebaseAuth.instance.currentUser!.phoneNumber!,
-        groupId: [],
-        statu: statu, blockedUsers: [], lastSeen: '',
-      );
-
-      await subRepository.saveUserData(user.toMap());
-
-
+    if (profile != null) {
+      photoUrl = await remoteDataSource.uploadProfileImage(profile);
     }
 
+    final user = UserModel(
+      name: name,
+      uid: uid,
+      profile: photoUrl,
+      isOnline: "true", // أو تحطها فاضية وتحدث لاحقاً
+      lastSeen: "",
+      phoneNumber: FirebaseAuth.instance.currentUser!.phoneNumber ?? "",
+      groupId: [],
+      statu: statu,
+      blockedUsers: [],
+    );
 
-  @override
-  Future<void> setUserState(String isOnline) async {
-    await subRepository.updateUserField({'isOnline': isOnline});
+    await remoteDataSource.saveUserData(user);
   }
 
+  /// ✅ تحديث الاسم
   @override
-  Future<void> addStatus(String status) async {
-    await subRepository.updateUserField({'statu': status});
+  Future<void> updateUserName(String name) {
+    return remoteDataSource.updateUserName(name);
   }
 
+  /// ✅ تحديث الحالة
   @override
-  Future<void> updateName(String name) async {
-    await subRepository.updateUserField({'name': name});
+  Future<void> updateUserStatu(String status) {
+    return remoteDataSource.updateUserStatus(status);
   }
 
+  /// ✅ تحديث صورة البروفايل
   @override
-  Future<void> updateProfileImageUrl(String photoUrl) async {
-    await subRepository.updateUserField({'profile': photoUrl});
+  Future<void> updateUserProfilePicture(File file) {
+    return remoteDataSource.updateUserProfilePicture(file);
   }
-
-  @override
-  Future<String> uploadProfileImage(File file) {
-    return subRepository.uploadProfileImage(file);
-  }
-
-
-  @override
-  Future<UserEntity> getUserByIdOnce(String uid) async{
-    return subRepository.getUserByIdOnce(uid);
-  }
-
-
-
-
-
-
-
-
-
-
-  @override
-  Future<void> updateUserName(String name) async {
-    return subRepository.updateUserName(name);
-  }
-  @override
-  Future<void> updateUserStatus(String status) async {
-    return subRepository.updateUserStatus(status);
-  }
-  @override
-  Future<void> updateUserProfilePicture(File file) async {
-    return subRepository.updateUserProfilePicture(file);
-  }
-  @override
-
-  Future<String?> getCurrentUserId() {
-    return subRepository.getCurrentUserId();
-  }
-
-
-
-
-
-
 }

@@ -1,4 +1,3 @@
-
 import '../repositories/interface_user_repository.dart';
 
 class UpdateUserStatusUseCase {
@@ -6,7 +5,7 @@ class UpdateUserStatusUseCase {
 
   UpdateUserStatusUseCase(this.repository);
 
-  Future<void> call(String status) {
-    return repository.updateUserStatus(status);
+  Future<void> call(String statu) {
+    return repository.updateUserStatu(statu);
   }
 }

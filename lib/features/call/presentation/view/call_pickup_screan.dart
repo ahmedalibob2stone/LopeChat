@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
-import '../../../user/provider/get_userdata_provider.dart';
+import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../data/model/call/call_model.dart';
 import '../../domain/entites/callentites.dart';
 import '../provider/viewmode/provider.dart';
@@ -36,7 +36,7 @@ class CallPickUp extends ConsumerWidget {
         final callModel = CallModel.fromMap(doc.data() as Map<String, dynamic>);
         final CallEntites call = callModel.toEntity();
 
-        final currentUser = ref.watch(userStreamProvider).asData?.value;
+        final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
         final currentUserId = currentUser?.uid;
 
         if (currentUserId == null) {

@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../../../../common/widgets/Loeading.dart';
 import '../../../../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/privacy/group/vm/viewmodel_provider.dart';
 import '../../../../viewmodel/privacy/group/group_privacy_viewmodel.dart';
 
@@ -90,7 +90,7 @@ class ExcludedContactsScreen extends ConsumerWidget {
     const double avatarRadius = 20.0;
     const double iconSize = 16.0;
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid ?? '';
 
     // استهلاك المزود profilePhotoVisibilityProvider

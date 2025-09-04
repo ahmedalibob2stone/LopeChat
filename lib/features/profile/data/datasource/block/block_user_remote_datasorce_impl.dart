@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../../user/model/user_model/user_model.dart';
+import '../../../../user/data/user_model/user_model.dart';
 import '../../model/block/block_privacy_model.dart';
 import 'block_user_remote_datasorce.dart';
 

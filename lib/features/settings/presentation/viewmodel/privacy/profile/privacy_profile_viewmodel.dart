@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../user/domain/entities/user_entity.dart';
-import '../../../../../user/domain/usecases/get_current_user_id_usecase.dart';
+import '../../../../../user/domain/usecases/get_curent_user_id_usecase.dart';
 import '../../../../domain/entities/privacy/privacy_profile/privacy_profile_entity.dart';
 import '../../../../domain/usecases/privacy/profile/get_privacy_profile_settings_usecase.dart';
 import '../../../../domain/usecases/privacy/profile/update_privacy_profile_settings_usecase.dart';

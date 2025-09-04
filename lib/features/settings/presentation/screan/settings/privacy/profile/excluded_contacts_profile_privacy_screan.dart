@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../../../../common/widgets/Loeading.dart';
-import '../../../../../../user/provider/get_userdata_provider.dart';
+import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/privacy/profile/vm/provider.dart';
 
 class ExcludedContactsProfilePrivacyScreen extends ConsumerWidget {
@@ -18,7 +18,7 @@ class ExcludedContactsProfilePrivacyScreen extends ConsumerWidget {
     const double fontSize = 16.0;
     final contacts = viewModel.sortedContacts;
 
-    final currentUser = ref.watch(userStreamProvider).asData?.value;
+    final currentUser = ref.watch(currentUserStreamProvider).asData?.value;
     final currentUserId = currentUser?.uid ?? '';
 
     return Scaffold(

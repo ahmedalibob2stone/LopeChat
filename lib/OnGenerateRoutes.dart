@@ -51,8 +51,8 @@ import 'features/settings/presentation/screan/settings/privacy/status/status_pri
 import 'features/settings/presentation/screan/settings/profile_screan/update_profile_screan.dart';
 import 'features/status/presentation/screan/status_screan.dart';
 import 'features/status/presentation/screan/widget/select_status_screan.dart';
-import 'features/user/ui/ckeck_user.dart';
-import 'features/user/ui/user_information.dart';
+import 'features/user/presentation/ui/ckeck_user.dart';
+import 'features/user/presentation/ui/user_info_screan.dart';
 
 
 class OnGenerateRoutes{
@@ -79,10 +79,10 @@ class OnGenerateRoutes{
           isFromAddAccount: isFromAddAccount, phoneNumber: phoneNumber,
         ));
 
-      case PageConst.user_information:
+      case PageConst.ProfileScreen:
         {
           return routeBuilder(
-              UserInformationScreen());
+              ProfileScreen());
         }
       case PageConst.ContactsScrean:
 
