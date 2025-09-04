@@ -1,6 +1,3 @@
-require('dotenv').config();
-console.log('TEST_MODE =', process.env.TEST_MODE);
-
 console.log('OTP service loaded')
 
 require('dotenv').config();
