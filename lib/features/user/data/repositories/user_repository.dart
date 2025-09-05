@@ -60,29 +60,7 @@ class UserRepository implements IUserRepository {
     required File? profile,
     required String statu,
   }) async {
-    final uid = remoteDataSource.currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
-
-    String photoUrl =
-        "https://upload.wikimedia.org/wikipedia/commons/5/5f/Alberto_conversi_profile_pic";
-
-    if (profile != null) {
-      photoUrl = await remoteDataSource.uploadProfileImage(profile);
-    }
-
-    final user = UserModel(
-      name: name,
-      uid: uid,
-      profile: photoUrl,
-      isOnline: "true", // أو تحطها فاضية وتحدث لاحقاً
-      lastSeen: "",
-      phoneNumber: FirebaseAuth.instance.currentUser!.phoneNumber ?? "",
-      groupId: [],
-      statu: statu,
-      blockedUsers: [],
-    );
-
-    await remoteDataSource.saveUserData(user);
+    return remoteDataSource.saveUserDatetoFirebase(name: name, profile: profile, statu: statu);
   }
 
   /// ✅ تحديث الاسم

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../common/widgets/Buttom_container.dart';
+import '../../../../common/widgets/helper snackbar/helper_snackbar.dart';
 import '../../../../constant.dart';
 import '../provider/vm/profile_view_model.dart';
 
@@ -78,13 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final status = _statusController.text.trim();
     final profile = _pickedImage != null ? File(_pickedImage!.path) : null;
 
-    if (name.isEmpty || status.isEmpty || profile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields and select an image')),
-      );
-      return;
-    }
-
+    // الحفظ يتم في أي حالة، حتى لو كانت القيم فارغة
     await ref.read(UserInfoViewModelProvider.notifier).saveUserData(
       name: name,
       profile: profile,
@@ -104,20 +99,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     ref.listen(UserInfoViewModelProvider, (previous, next) {
       if (next.nameError != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.nameError!)),
-        );
-
+        AppSnackbar.showError(context, next.nameError!);
       } else if (next.statusError != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.statusError!)),
-        );
+        AppSnackbar.showError(context, next.statusError!);
       } else if (next.imageError != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.imageError!)),
-        );
+        AppSnackbar.showError(context, next.imageError!);
       }
     });
+
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -125,101 +115,114 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         centerTitle: true,
         automaticallyImplyLeading: true, // حذف أي أزرار الحفظ
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile image
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage: _pickedImage != null
-                      ? FileImage(File(_pickedImage!.path))
-                      : ref.read(UserInfoViewModelProvider).user?.profile != null
-                      ? NetworkImage(ref.read(UserInfoViewModelProvider).user!.profile)
-                      : null as ImageProvider<Object>?,
-                  child: (_pickedImage == null &&
-                      ref.read(UserInfoViewModelProvider).user?.profile == null)
-                      ? const Icon(Icons.person, size: 60, color: Colors.white)
-                      : null,
-                ),
-                Positioned(
-                  bottom: 5,
-                  right: 0,
-                  child: InkWell(
-                    onTap: _pickImage,
-                    child: const CircleAvatar(
+      body: Consumer(
+        builder: (context, ref, child) {
+          final profileState = ref.watch(UserInfoViewModelProvider);
 
-                      radius: 17,
-                      backgroundColor: kkPrimaryColor,
-                      child: Icon(Icons.add_a_photo, color: Colors.white,size: 19,),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Profile image
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: screenWidth * 0.15, // متجاوبة مع حجم الشاشة
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: _pickedImage != null
+                          ? FileImage(File(_pickedImage!.path))
+                          : profileState.user?.profile != null
+                          ? NetworkImage(profileState.user!.profile)
+                          : null as ImageProvider<Object>?,
+                      child: (_pickedImage == null &&
+                          profileState.user?.profile == null)
+                          ? const Icon(Icons.person,
+                          size: 60, color: Colors.white)
+                          : null,
                     ),
+                    Positioned(
+                      bottom: 5,
+                      right: 0,
+                      child: InkWell(
+                        onTap: _pickImage,
+                        child: const CircleAvatar(
+                          radius: 17,
+                          backgroundColor: kkPrimaryColor,
+                          child: Icon(
+                            Icons.add_a_photo,
+                            color: Colors.white,
+                            size: 19,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+
+                // Name field
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          border: UnderlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    _isSavingName
+                        ? const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : IconButton(
+                      icon: const Icon(Icons.edit, color: kkPrimaryColor),
+                      onPressed: _updateName,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Status field
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _statusController,
+                        decoration: const InputDecoration(
+                          labelText: 'Status',
+                          border: UnderlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    _isSavingStatus
+                        ? const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : IconButton(
+                      icon: const Icon(Icons.edit, color: kkPrimaryColor),
+                      onPressed: _updateStatus,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 100),
+
+                // Next button
+                SizedBox(
+                  width: screenWidth * 0.9, // يناسب حجم الشاشة
+                  child: ButtonContainerWidget(
+                    color: kkPrimaryColor,
+                    text: 'Next',
+                    onTapListener: _handleNext,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-
-            // Name field
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      border: UnderlineInputBorder(),
-                    ),
-                  ),
-                ),
-                _isSavingName
-                    ? const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : IconButton(
-                  icon: const Icon(Icons.edit, color: kkPrimaryColor),
-                  onPressed: _updateName,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Status field
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _statusController,
-                    decoration: const InputDecoration(
-                      labelText: 'Status',
-                      border: UnderlineInputBorder(),
-                    ),
-                  ),
-                ),
-                _isSavingStatus
-                    ? const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : IconButton(
-                  icon: const Icon(Icons.edit, color:kkPrimaryColor),
-                  onPressed: _updateStatus,
-                ),
-              ],
-            ),
-            const SizedBox(height: 100),
-
-            // Next button
-            ButtonContainerWidget(
-              color: kkPrimaryColor,
-              text: 'Next',
-              onTapListener: _handleNext,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

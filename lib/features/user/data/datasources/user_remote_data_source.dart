@@ -47,47 +47,78 @@ class UserRemoteDataSource {
     return UserModel.fromMap(data);
   }
 
-  /// ✅ حفظ بيانات جديدة لليوزر
   Future<void> saveUserData(UserModel user) async {
     final uid = currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
     await firestore.collection('users').doc(uid).set(user.toMap());
   }
 
-  /// ✅ رفع صورة البروفايل فقط
   Future<String> uploadProfileImage(File file) {
     final uid = currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
     return storageRepository.storeFiletofirstorage('Profile/$uid', file);
   }
 
-  /// ✅ تحديث الاسم
   Future<void> updateUserName(String name) async {
     final uid = currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
-    await firestore.collection('users').doc(uid).update({'name': name});
+    await firestore.collection('users').doc(uid).set({'name': name}, SetOptions(merge: true));
+
   }
 
   /// ✅ تحديث الحالة
   Future<void> updateUserStatus(String status) async {
     final uid = currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
-    await firestore.collection('users').doc(uid).update({'statu': status});
+    await firestore.collection('users').doc(uid).set(
+      { 'statu': status,},SetOptions(merge: true)
+    );
   }
 
-  /// ✅ تحديث صورة البروفايل
   Future<void> updateUserProfilePicture(File file) async {
     final uid = currentUserId;
-    if (uid == null) throw Exception("User not authenticated");
     final imageUrl = await storageRepository.storeFiletofirstorage(
-      'Profile/$uid',
+      'users/$uid/Profile/$uid',
       file,
     );
-    await firestore.collection('users').doc(uid).update({'profile': imageUrl});
+    await firestore.collection('users').doc(uid).set(
+        ({'profile': imageUrl}),SetOptions(merge: true)
+    );
   }
 
-  /// ✅ Stream لمستند اليوزر (DocumentSnapshot)
   Stream<DocumentSnapshot<Map<String, dynamic>>> userDocStream(String uid) {
     return firestore.collection('users').doc(uid).snapshots();
   }
+  Future<void> saveUserDatetoFirebase({
+    required String name,
+    required File? profile,
+    required String statu,
+  }) async {
+    try {
+
+      final uid = currentUserId ?? "";
+      final phone = auth.currentUser?.phoneNumber ?? "";
+      String photoUrl =
+          "https://upload.wikimedia.org/wikipedia/commons/5/5f/Alberto_conversi_profile_pic";
+
+      if (profile != null) {
+        photoUrl = await storageRepository.storeFiletofirstorage('Profile/$uid', profile);
+      }
+      final user = UserModel(
+        name: name.isEmpty ? "" : name,
+        uid: uid,
+        profile: photoUrl,
+        isOnline: "false",
+        lastSeen: "",
+        phoneNumber: phone,
+        groupId: [],
+        statu: statu.isEmpty ? "" : statu,
+        blockedUsers: [],
+      );
+
+      // حفظ المستند الأولي لجميع الحقول
+      await firestore.collection('users').doc(uid).set(user.toMap(),SetOptions(merge: true));
+    } catch (e, st) {
+      print("Error saving user data: $e");
+      print("StackTrace: $st");
+      rethrow;
+    }
+  }
+
 }

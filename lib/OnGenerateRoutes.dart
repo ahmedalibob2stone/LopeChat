@@ -101,10 +101,10 @@ class OnGenerateRoutes{
         }
       case PageConst.mobileChatScrean:
         final arguments = settings.arguments as Map<String, dynamic>;
-        final name = arguments['name'];
-        final uid = arguments['uid'];
-        final isGroupChat = arguments['isGroupChat'];
-        final profilePic = arguments['profilePic'];
+        final name = arguments['name'] ?? '';
+        final uid = arguments['uid']?? '';
+        final isGroupChat = arguments['isGroupChat']?? '';
+        final profilePic = arguments['profilePic']?? '';
 
 
             {

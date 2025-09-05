@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const redisClient = require('../config/redis');
 const twilioClient = require('../config/twilio');
 const admin = require('../config/firebase');
@@ -36,15 +37,19 @@ exports.sendOtp = async (req, res) => {
     res.status(500).json({ error: 'Failed to send OTP', details: error.message });
   }
 };
-
+function generateUUID() {
+  return 'xxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 exports.verifyOtp = async (req, res) => {
   const { phoneNumber, otp } = req.body;
-
   const attemptsKey = `otp_attempts_${phoneNumber}`;
 
   try {
     let attempts = await redisClient.get(attemptsKey);
-    attempts = attempts ? parseInt(attempts) : 0;
+    attempts = attempts ? parseInt(attempts, 10) : 0;
 
     if (attempts >= 5) {
       return res.status(429).json({ error: 'Maximum number of attempts exceeded. Please try again later.' });
@@ -53,18 +58,31 @@ exports.verifyOtp = async (req, res) => {
     const storedOtp = await redisClient.get(phoneNumber);
 
     if (!storedOtp || storedOtp !== otp) {
-      await redisClient.setEx(attemptsKey, 300, attempts + 1);
+      await redisClient.setEx(attemptsKey, 300, String(attempts + 1));
       return res.status(401).json({ error: 'Incorrect verification code' });
     }
 
     await redisClient.del(phoneNumber);
     await redisClient.del(attemptsKey);
 
-    const uid = phoneNumber.replace('+', '');
-    const customToken = await admin.auth().createCustomToken(uid);
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber);
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        const uid = uuidv4();
+        userRecord = await admin.auth().createUser({ uid, phoneNumber });
+      } else {
+        throw error;
+      }
+    }
 
-    res.json({ uid, token: customToken });
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+    res.json({ uid: userRecord.uid, token: customToken });
+
   } catch (error) {
+    console.error('verifyOtp error:', error);
     res.status(500).json({ error: 'Failed to create token', details: error.message });
   }
 };
+

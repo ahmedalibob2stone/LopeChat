@@ -80,17 +80,23 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
 
 
     String _mapExceptionToMessage(dynamic e) {
+
       if (e is TimeoutException) return "Connection timeout. Please try again.";
-      if (e is SocketException) return "No internet connection. Please check your network.";
+      if (e.toString().contains("SocketException") || e.toString().contains("network")) {
+        return "No internet connection";
+      }
       if (e is FirebaseException) return e.message ?? "Firebase error occurred.";
 
       return "Unexpected error occurred. Please try again.";
   }
 
   Future<void> updateName(String name) async {
-    if (!await CheckInternet.isConnected()) {
-      state = state.copyWith(nameError: "Network error: please check your connection");
-      return;
+    final connected = await CheckInternet.isConnected();
+    if (!await connected) {
+      state = state.copyWith(
+        nameError: "Network error: please check your connection",
+        isLoading: false,
+      );      return;
     }
 
     state = state.copyWith(isLoading: true, nameError: null);
@@ -104,8 +110,13 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
   }
 
   Future<void> updateStatus(String status) async {
-    if (!await CheckInternet.isConnected()) {
-      state = state.copyWith(statusError: "Network error: please check your connection");
+    final connected = await CheckInternet.isConnected();
+    if (!await connected)  {
+      state = state.copyWith(
+        nameError: "Network error: please check your connection",
+        isLoading: false,
+      );
+
       return;
     }
 
@@ -120,9 +131,12 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
   }
 
   Future<void> updateProfileImage(dynamic file) async {
-    if (!await CheckInternet.isConnected()) {
-      state = state.copyWith(imageError: "Network error: please check your connection");
-      return;
+    final connected = await CheckInternet.isConnected();
+    if (!await connected) {
+      state = state.copyWith(
+        nameError: "Network error: please check your connection",
+        isLoading: false,
+      );      return;
     }
 
     File? imageFile;
@@ -147,20 +161,23 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
     required File? profile,
     required String statu,
   }) async {
-    if (!await CheckInternet.isConnected()) {
-      state = state.copyWith(nameError: "Network error: please check your connection");
-      return;
+    final connected = await CheckInternet.isConnected();
+    if (!await connected) {
+      state = state.copyWith(
+        nameError: "Network error: please check your connection",
+        isLoading: false,
+      );      return;
     }
 
     state = state.copyWith(isLoading: true);
     try {
-      await _saveUserDataToFirebaseUseCase(
+      await _saveUserDataToFirebaseUseCase.call(
         name: name,
         profile: profile,
         statu: statu,
       );
     } catch (e) {
-      state = state.copyWith(nameError: _mapExceptionToMessage(e));
+      state = state.copyWith(nameError:_mapExceptionToMessage(e));
     } finally {
       state = state.copyWith(isLoading: false);
     }
