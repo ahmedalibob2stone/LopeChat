@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
@@ -14,11 +13,8 @@ import '../features/chat/presentaion/provider/chat_group/viewmodel/provider.dart
 import '../features/chat/presentaion/screan/contact_list.dart';
 import '../features/status/presentation/screan/status_contacts_screan.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
 class MobileScreenLayout extends ConsumerStatefulWidget {
-
-  const MobileScreenLayout({Key? key,}) : super(key: key);
+  const MobileScreenLayout({Key? key}) : super(key: key);
 
   @override
   ConsumerState<MobileScreenLayout> createState() => _MobileScreenLayoutState();
@@ -41,7 +37,6 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     WidgetsBinding.instance.addObserver(this);
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(_handleTabIndex);
-
   }
 
   void clearSearch() {
@@ -59,8 +54,6 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     tabController.dispose();
     searchController.dispose();
   }
-
-
 
   void _handleTabIndex() {
     setState(() {});
@@ -80,11 +73,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
   Future<void> archiveSelected() async {
     for (var chat in selectedChats) {
       if (chat.isGroup) {
-        await ref.read(GroupArchivingViewModelProvider.notifier)
-            .archiveGroup(chat.id);
+        await ref.read(GroupArchivingViewModelProvider.notifier).archiveGroup(chat.id);
       } else {
-        await ref.read(chatContactViewModelProvider.notifier)
-            .archiveChat(chat.id);
+        await ref.read(chatContactViewModelProvider.notifier).archiveChat(chat.id);
       }
     }
     setState(() {
@@ -92,7 +83,6 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     });
     await ref.read(chatContactViewModelProvider.notifier).loadUnarchivedChats();
 
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     await ref.read(GroupArchivingViewModelProvider.notifier).loadUnarchivedGroup();
   }
 
@@ -109,28 +99,41 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     return showDialog(
         builder: (BuildContext context) {
           return SimpleDialog(
-            title: Text("  Photo From ", style: TextStyle(fontWeight: FontWeight.bold),),
+            title: Text(
+              "  Photo From ",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             children: [
               SimpleDialogOption(
-                  child: Text("  Camera ", style: TextStyle(fontWeight: FontWeight.bold),),
+                  child: Text(
+                    "  Camera ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () async {
                     TackImage = await tackImage(context);
                     if (TackImage != null) {
-                      Navigator.of(context).pushNamed(PageConst.status, arguments: TackImage);
+                      Navigator.of(context)
+                          .pushNamed(PageConst.status, arguments: TackImage);
                     }
-                  }
-              ),
+                  }),
               SimpleDialogOption(
-                child: Text("  Gallery ", style: TextStyle(fontWeight: FontWeight.bold),),
+                child: Text(
+                  "  Gallery ",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 onPressed: () async {
                   pickedImage = await pickImageFromGallery(context);
                   if (pickedImage != null) {
-                    Navigator.of(context).pushNamed(PageConst.status, arguments: pickedImage);
+                    Navigator.of(context)
+                        .pushNamed(PageConst.status, arguments: pickedImage);
                   }
                 },
               ),
               SimpleDialogOption(
-                child: Text("  Cancel ", style: TextStyle(fontWeight: FontWeight.bold),),
+                child: Text(
+                  "  Cancel ",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -168,7 +171,8 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     filled: true,
                     fillColor: Color.fromARGB(255, 39, 39, 39),
                     hintText: 'Search',
@@ -205,7 +209,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
                     PopupMenuItem(
                       child: const Text('Create Group'),
                       onTap: () {
-                        Future(() => Navigator.of(context).pushNamed(PageConst.GroupScrean));
+                        Future(
+                                () => Navigator.of(context)
+                                .pushNamed(PageConst.GroupScrean));
                       },
                     )
                   ],
@@ -223,26 +229,29 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
                 ],
               ),
             ),
-
             body: TabBarView(
               controller: tabController,
               children: [
                 ContactList(
                   searchName: searchName,
                   isShowUser: isShowUser,
-                  toggleSelection: toggleSelection, selectedContacts: selectedChats,
+                  toggleSelection: toggleSelection,
+                  selectedContacts: selectedChats,
                 ),
                 StatusListScreen(),
-                CallListScreen(isGroupChat:true),
+                CallListScreen(isGroupChat: true),
               ],
             ),
             floatingActionButton: tabController.index == 0
                 ? FloatingActionButton(
               onPressed: () async {
-                Navigator.of(context).pushNamed(PageConst.ContactsScrean);
+                Navigator.of(context)
+                    .pushNamed(PageConst.ContactsScrean);
               },
               backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.edit_outlined, color: Colors.white, size: MediaQuery.of(context).size.width * 0.07),
+              child: Icon(Icons.edit_outlined,
+                  color: Colors.white,
+                  size: MediaQuery.of(context).size.width * 0.07),
             )
                 : tabController.index == 1
                 ? FloatingActionButton(
@@ -250,13 +259,129 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
                 chooseimage();
               },
               backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.camera_alt, color: Colors.white, size: MediaQuery.of(context).size.width * 0.07),
+              child: Icon(Icons.camera_alt,
+                  color: Colors.white,
+                  size: MediaQuery.of(context).size.width * 0.07),
             )
                 : Container(),
           );
         } else {
+          // نسخة الموبايل والشاشات الصغيرة ✅
           return Scaffold(
-
+            key: _scaffoldKey,
+            appBar: AppBar(
+              backgroundColor: kkPrimaryColor,
+              centerTitle: true,
+              automaticallyImplyLeading: false,
+              elevation: 5,
+              title: SizedBox(
+                height: 40,
+                child: TextField(
+                  controller: searchController,
+                  style: TextStyle(color: Colors.grey),
+                  onChanged: (value) {
+                    setState(() {
+                      searchName = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 39, 39, 39),
+                    hintText: 'Search',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(top: 0.0),
+                      child: IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          clearSearch();
+                        },
+                      ),
+                    ),
+                  ),
+                  onSubmitted: (String _) {
+                    setState(() {
+                      isShowUser = true;
+                    });
+                  },
+                ),
+              ),
+              leading: GestureDetector(
+                child: Icon(Icons.menu, color: Colors.white38, size: 30),
+                onTap: () {
+                  _scaffoldKey.currentState!.openDrawer();
+                },
+              ),
+              actions: [
+                PopupMenuButton(
+                  color: Colors.grey,
+                  icon: const Icon(Icons.more_vert, color: Colors.grey),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      child: const Text('Create Group'),
+                      onTap: () {
+                        Future(
+                                () => Navigator.of(context)
+                                .pushNamed(PageConst.GroupScrean));
+                      },
+                    )
+                  ],
+                ),
+              ],
+              bottom: TabBar(
+                controller: tabController,
+                indicatorWeight: 4,
+                unselectedLabelColor: Colors.grey,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                tabs: const [
+                  Tab(text: 'CHATS'),
+                  Tab(text: 'STATUS'),
+                  Tab(text: 'CALLS'),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              controller: tabController,
+              children: [
+                ContactList(
+                  searchName: searchName,
+                  isShowUser: isShowUser,
+                  toggleSelection: toggleSelection,
+                  selectedContacts: selectedChats,
+                ),
+                StatusListScreen(),
+                CallListScreen(isGroupChat: true),
+              ],
+            ),
+            floatingActionButton: tabController.index == 0
+                ? FloatingActionButton(
+              onPressed: () async {
+                Navigator.of(context)
+                    .pushNamed(PageConst.ContactsScrean);
+              },
+              backgroundColor: kkPrimaryColor,
+              child: Icon(Icons.edit_outlined,
+                  color: Colors.white,
+                  size: MediaQuery.of(context).size.width * 0.07),
+            )
+                : tabController.index == 1
+                ? FloatingActionButton(
+              onPressed: () async {
+                chooseimage();
+              },
+              backgroundColor: kkPrimaryColor,
+              child: Icon(Icons.camera_alt,
+                  color: Colors.white,
+                  size: MediaQuery.of(context).size.width * 0.07),
+            )
+                : Container(),
           );
         }
       },

@@ -6,7 +6,6 @@ import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../constant.dart';
 import '../../../settings/presentation/provider/privacy/statu/vm/filter_statu_viewmodel.dart';
 import '../../../settings/presentation/provider/privacy/statu/vm/status_privascy_viewmodel.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 
 class StatusListScreen extends ConsumerWidget {

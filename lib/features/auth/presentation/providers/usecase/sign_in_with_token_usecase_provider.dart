@@ -8,7 +8,9 @@ import '../../../domain/usecase/sign_in_with_token_usecase.dart';
 
 
 final authApiDataSourceProvider = Provider<AuthApiDataSource>((ref) {
-  return AuthApiDataSource('https://your-api-base-url.com');
+  final String baseUrl = 'https://lopechat.onrender.com';
+
+  return AuthApiDataSource( baseUrl: baseUrl);
 });
 
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
@@ -20,4 +22,5 @@ final authRepositoryProvider = Provider<IAuthRepository>((ref) {
 
 final signInWithTokenUseCaseProvider = Provider<SignInWithTokenUseCase>((ref) {
   return SignInWithTokenUseCase(FirebaseAuth.instance);
+
 });

@@ -38,7 +38,8 @@ class UserRemoteDataSource {
   }
 
   /// ✅ إرجاع يوزر مرة واحدة
-  Future<UserModel> getUserByIdOnce(String uid) async {
+  Future<UserModel> getUserByIdOnce() async {
+    final uid=currentUserId;
     final snapshot = await firestore.collection('users').doc(uid).get();
     final data = snapshot.data();
     if (!snapshot.exists || data == null) {
@@ -63,7 +64,7 @@ class UserRemoteDataSource {
 
   }
 
-  /// ✅ تحديث الحالة
+
   Future<void> updateUserStatus(String status) async {
     final uid = currentUserId;
     await firestore.collection('users').doc(uid).set(
@@ -82,9 +83,40 @@ class UserRemoteDataSource {
     );
   }
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> userDocStream(String uid) {
-    return firestore.collection('users').doc(uid).snapshots();
+  Stream<UserModel?> currentUserStream() {
+    return auth.authStateChanges().asyncExpand((user) {
+      if (user == null) {
+        print("🚨 authStateChanges: user = null");
+        return Stream.value(null);
+      }
+
+      print("🔥 authStateChanges: user.uid = ${user.uid}");
+      return firestore.collection('users').doc(user.uid).snapshots().map((doc) {
+        print("📄 Firestore snapshot: exists=${doc.exists}, data=${doc.data()}");
+
+        final data = doc.data();
+        if (data == null) {
+          print("⚠️ المستند موجود لكن بدون بيانات");
+          return null;
+        }
+        return UserModel.fromMap(data);
+      });
+    });
   }
+
+
+
+  Future<UserModel?>getCurentUserData()async{
+    var userData = await firestore.collection('users').doc(auth.currentUser?.uid).get();
+    UserModel?user;
+    if(userData.data() !=null){
+      user =UserModel.fromMap(userData.data() !);
+    }
+    return user;
+  }
+
+
+
   Future<void> saveUserDatetoFirebase({
     required String name,
     required File? profile,
@@ -98,7 +130,11 @@ class UserRemoteDataSource {
           "https://upload.wikimedia.org/wikipedia/commons/5/5f/Alberto_conversi_profile_pic";
 
       if (profile != null) {
-        photoUrl = await storageRepository.storeFiletofirstorage('Profile/$uid', profile);
+        photoUrl = await storageRepository.storeFiletofirstorage(
+          'users/$uid/Profile/$uid',
+          profile, // الملف من نوع File
+        );
+
       }
       final user = UserModel(
         name: name.isEmpty ? "" : name,

@@ -11,7 +11,6 @@ import '../../../../constant.dart';
 
 import '../../../contact/presentation/provider/vm/get_app_contact_viewmodel_provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/chat_contact/viewmodel/provider.dart';
 import '../provider/chat_group/viewmodel/provider.dart';
@@ -220,7 +219,7 @@ class _ContactListState extends ConsumerState<ContactList> {
                   } else {
                     ref.read(chatSeenViewModelProvider.notifier).markMessageAsSeen(
                       currentUserId!,
-                      chatContact.contactId,
+
                     );
                     Navigator.pushNamed(
                       context,

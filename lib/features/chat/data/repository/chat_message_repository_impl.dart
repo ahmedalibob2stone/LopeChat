@@ -26,7 +26,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
 
     return remoteDataSource.sendTextMessage(
       text: text,
-      chatId: chatId,
+      reciveUserId: chatId,
       sendUser: userModel,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
@@ -43,10 +43,11 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
     final userModel = UserModel.fromEntity(sendUser);
 
     return remoteDataSource.sendLinkMessage(link: link,
-        chatId: chatId, sendUser: userModel, messageReply: messageReply, isGroupChat: isGroupChat);
+         sendUser: userModel, messageReply: messageReply,
+        isGroupChat: isGroupChat,  reciveUserId: chatId);
   }
   @override
-  Future<void> sendFileMessage({
+  Future<String> sendFileMessage({
     required File file,
     required String chatId,
     required UserEntity  senderUserDate,
@@ -58,10 +59,10 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
 
     return remoteDataSource.sendFileMessage(
       file: file,
-      chatId: chatId,
-      senderUserDate: userModel,
+      reciveUserId: chatId,
+      senderUserData: userModel,
       massageEnum: massageEnum,
-      messageReply: messageReply!,
+      messageReply: messageReply,
       isGroupChat: isGroupChat,
     );
   }
@@ -78,7 +79,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
 
     return remoteDataSource.sendGIFMessage(
       gif: gif,
-      chatId: chatId,
+      reciveUserId: chatId,
       sendUser: userModel,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
@@ -101,7 +102,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
     required String messageId,
   }) {
     return remoteDataSource.deleteMessage(
-      chatId: chatId,
+      reciveUserId: chatId,
       messageId: messageId,
     );
   }
@@ -114,12 +115,12 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
       String messageId,
       ) {
     return remoteDataSource.setChatMessageSeen(
-   chatId: chatId, messageId: messageId,
+   reciveUserId: chatId, messageId: messageId,
     );
   }
 
   @override
-  Future<void> markMessagesAsSeen(String chatId, String contactId) {
-    return remoteDataSource.markMessagesAsSeen(chatId, contactId);
+  Future<void> markMessagesAsSeen(String chatId) {
+    return remoteDataSource.markMessagesAsSeen(chatId);
   }
 }

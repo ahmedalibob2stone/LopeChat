@@ -4,9 +4,9 @@ import '../../../viewmodel/user status/user_status_viewmodel.dart';
 import '../usecase/provider.dart';
 
 final userStatusViewModelProvider = StateNotifierProvider<UserStatusViewModel, UserStatusState>((ref) {
-  final update = ref.watch(updateUserUseCaseProvider);
-  final lastSeen = ref.watch(getUserLastSeenUseCaseProvider);
-  final onlineStatus = ref.watch(getUserOnlineStatusUseCaseProvider);
+  final update = ref.read(updateUserUseCaseProvider);
+  final lastSeen = ref.read(getUserLastSeenUseCaseProvider);
+  final onlineStatus = ref.read(getUserOnlineStatusUseCaseProvider);
 
   return UserStatusViewModel(
     updateStatusUseCase: update,

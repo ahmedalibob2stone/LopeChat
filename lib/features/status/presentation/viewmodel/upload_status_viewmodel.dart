@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../domain/usecases/upload_status_usecase.dart';
 

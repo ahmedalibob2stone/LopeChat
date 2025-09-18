@@ -77,6 +77,10 @@ class BlockUserViewModel extends StateNotifier<BlockUserState> {
   }
 
   Future<void> loadBlockedContacts() async {
+    if (state.blockedContacts.isNotEmpty || state.status == BlockUserStatus.loading) {
+      return;
+    }
+
     state = state.copyWith(status: BlockUserStatus.loading, message: '');
     try {
       // افترض أن الـ UseCase يرجع List<BlockEntity>
@@ -182,7 +186,7 @@ class BlockUserViewModel extends StateNotifier<BlockUserState> {
     return true;
   }
 
-  Future<Either<String, bool>> canSendMessage({
+  Future<Either<String,bool>> canSendMessage({
     required String currentUserId,
     required String receiverUserId,
   }) async {

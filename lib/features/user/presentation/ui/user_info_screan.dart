@@ -7,6 +7,7 @@ import '../../../../common/widgets/Buttom_container.dart';
 import '../../../../common/widgets/helper snackbar/helper_snackbar.dart';
 import '../../../../constant.dart';
 import '../provider/vm/profile_view_model.dart';
+import '../viewmodel/updateing_profile_viewmodel.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -21,7 +22,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   XFile? _pickedImage;
   bool _isSavingName = false;
   bool _isSavingStatus = false;
-
+  bool _isImageLoading = false;
+  bool _isNextLoading = false;
   @override
   void initState() {
     super.initState();
@@ -41,14 +43,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      setState(() {
-        _pickedImage = picked;
-      });
-      await ref
-          .read(UserInfoViewModelProvider.notifier)
-          .updateProfileImage(picked);
+      _pickedImage = picked;
+      try {
+        await ref.read(UserInfoViewModelProvider.notifier).updateProfileImage(picked);
+      } catch (e) {
+        AppSnackbar.showError(context, e.toString());
+      }
     }
   }
+
 
   Future<void> _updateName() async {
     setState(() {
@@ -79,19 +82,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final status = _statusController.text.trim();
     final profile = _pickedImage != null ? File(_pickedImage!.path) : null;
 
-    // الحفظ يتم في أي حالة، حتى لو كانت القيم فارغة
-    await ref.read(UserInfoViewModelProvider.notifier).saveUserData(
-      name: name,
-      profile: profile,
-      statu: status,
-    );
 
-    if (mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        PageConst.mobileChatScrean,
-            (route) => false,
+    try {
+      await ref.read(UserInfoViewModelProvider.notifier).saveUserData(
+        name: name,
+        profile: profile,
+        statu: status,
       );
+
+{
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            PageConst.MobileScreenLayout,
+                (route) => false,
+          );
+        }
+      }
+    } catch (_) {
+      // الأخطاء تم عرضها عبر listen بالفعل
+    } finally {
+
     }
   }
 
@@ -109,6 +120,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final screenWidth = MediaQuery.of(context).size.width;
 
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
@@ -118,46 +130,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: Consumer(
         builder: (context, ref, child) {
           final profileState = ref.watch(UserInfoViewModelProvider);
+          final double avatarRadius = MediaQuery.of(context).size.width * 0.15;
 
+          final ImageProvider? bgImage = _pickedImage != null
+              ? FileImage(File(_pickedImage!.path))
+              : (profileState.user?.profile != null && profileState.user!.profile!.isNotEmpty
+              ? NetworkImage(profileState.user!.profile!)
+              : null);
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // Profile image
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: screenWidth * 0.15, // متجاوبة مع حجم الشاشة
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: _pickedImage != null
-                          ? FileImage(File(_pickedImage!.path))
-                          : profileState.user?.profile != null
-                          ? NetworkImage(profileState.user!.profile)
-                          : null as ImageProvider<Object>?,
-                      child: (_pickedImage == null &&
-                          profileState.user?.profile == null)
-                          ? const Icon(Icons.person,
-                          size: 60, color: Colors.white)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 5,
-                      right: 0,
-                      child: InkWell(
-                        onTap: _pickImage,
-                        child: const CircleAvatar(
-                          radius: 17,
-                          backgroundColor: kkPrimaryColor,
-                          child: Icon(
-                            Icons.add_a_photo,
-                            color: Colors.white,
-                            size: 19,
-                          ),
+              SizedBox(
+              height: avatarRadius * 2,
+              width: avatarRadius * 2,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CircleAvatar(
+                    radius: avatarRadius,
+                    backgroundColor: Colors.grey[300],
+                    // cast آمن لتفادي مشكلة الأنواع الجنيريك
+                    backgroundImage: bgImage as ImageProvider<Object>?,
+                    child: bgImage == null
+                        ? const Icon(Icons.person, size: 60, color: Colors.white)
+                        : null,
+                  ),
+
+                  if (profileState.isImageLoading)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.center,
+                        // color: Colors.black26,
+                        child: const SizedBox(
+                          height: 36,
+                          width: 36,
+                          child: CircularProgressIndicator(strokeWidth: 3),
                         ),
                       ),
                     ),
-                  ],
-                ),
+
+                  Positioned(
+                    right: 0,
+                    bottom: 5,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      child: const CircleAvatar(
+                        radius: 17,
+                        backgroundColor: kkPrimaryColor,
+                        child: Icon(Icons.add_a_photo, color: Colors.white, size: 19),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
                 const SizedBox(height: 30),
 
                 // Name field
@@ -209,21 +236,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 100),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          profileState.isNextLoading
+          ? const Center(child: CircularProgressIndicator())
+              : ButtonContainerWidget(
+          color: kkPrimaryColor,
+          text: 'Next',
+          onTapListener: _handleNext,
+          )
 
-                // Next button
-                SizedBox(
-                  width: screenWidth * 0.9, // يناسب حجم الشاشة
-                  child: ButtonContainerWidget(
-                    color: kkPrimaryColor,
-                    text: 'Next',
-                    onTapListener: _handleNext,
-                  ),
-                ),
-              ],
-            ),
+          ],
+
+          )
           );
+
+
+
+
         },
-      ),
+      )
     );
   }
 }

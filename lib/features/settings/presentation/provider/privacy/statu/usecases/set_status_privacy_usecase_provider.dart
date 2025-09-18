@@ -1,7 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../../../../main.dart';
 import '../../../../../data/datasource/privacy/statu/status_privacy_local_datasorce.dart';
 import '../../../../../data/datasource/privacy/statu/status_privacy_local_datasorce_impl.dart';
 import '../../../../../data/datasource/privacy/statu/status_privacy_remote_datasorce.dart';
@@ -9,12 +12,6 @@ import '../../../../../data/datasource/privacy/statu/status_privacy_remote_datas
 import '../../../../../data/repository/privacy/statu/status_privacy_repository_impl.dart';
 import '../../../../../domain/repository/privacy/statu/status_privacy_repository.dart';
 import '../../../../../domain/usecases/privacy/statu/set_status_privacy_usecase.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError();
-});
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -35,6 +32,7 @@ final statusPrivacyLocalDataSourceProvider = Provider<StatusPrivacyLocalDataSour
   final sharedPrefs = ref.watch(sharedPreferencesProvider);
   return StatusPrivacyLocalDataSourceImpl(sharedPrefs);
 });
+
 
 final statusPrivacyRepositoryProvider = Provider<StatusPrivacyRepository>((ref) {
   final remoteDataSource = ref.watch(statusPrivacyRemoteDataSourceProvider);

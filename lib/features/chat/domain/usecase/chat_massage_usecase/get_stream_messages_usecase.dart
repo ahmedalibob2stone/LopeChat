@@ -1,5 +1,5 @@
 
-import '../../entities/message_entity.dart';
+import '../../entities/chat message/message_entity.dart';
 import '../../repository/chat_message_repository.dart';
 
 class GetStreamMessagesUseCase {

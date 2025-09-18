@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../../../../../main.dart';
 import '../../../../../data/datasource/privacy/last seen and online/last_seen_and_online_privacy_local_datasorce.dart';
 import '../../../../../data/datasource/privacy/last seen and online/last_seen_and_online_privacy_remote_datasource.dart';
 import '../../../../../data/repository/privacy/last seen and online/last_seen_and_online_repository_impl.dart';
@@ -21,24 +22,11 @@ final remoteDataSourceProvider = Provider<LastSeenAndOnlineRemoteDataSource>((re
   );
 });
 
-final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) async {
-  return await SharedPreferences.getInstance();
-});
+
 
 final localDataSourceProvider = Provider<LastSeenAndOnlineLocalDataSource>((ref) {
-  final sharedPrefsAsync = ref.watch(sharedPreferencesProvider);
-
-  return sharedPrefsAsync.when(
-    data: (sharedPrefs) {
-      return LastSeenAndOnlineLocalDataSourceImpl(sharedPreferences: sharedPrefs);
-    },
-    loading: () {
-      throw UnimplementedError('SharedPreferences not loaded yet');
-    },
-    error: (err, stack) {
-      throw Exception('Failed to load SharedPreferences: $err');
-    },
-  );
+  final sharedPrefs = ref.watch(sharedPreferencesProvider);
+  return LastSeenAndOnlineLocalDataSourceImpl( sharedPreferences: sharedPrefs);
 });
 
 final lastSeenAndOnlineRepositoryProvider = Provider<LastSeenAndOnlineRepository>((ref) {

@@ -1,12 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../../../main.dart';
 import '../../../../../data/datasource/privacy/camera effect/camera_effect_datasource.dart';
 import '../../../../../data/datasource/privacy/camera effect/camera_effect_datasource_impl.dart';
 import '../../../../../data/repository/privacy/camera effects/camera_effect_repository_impl.dart';
 import '../../../../../domain/repository/privacy/camera effect/camera_effect_repository.dart';
 import '../../../../../domain/usecases/privacy/camera effect/set_camera_effects_usecase.dart';
-import '../../../account/email/data/provider.dart';
-
 
 
 final cameraEffectsDataSourceProvider = Provider<CameraEffectsDataSource>((ref) {

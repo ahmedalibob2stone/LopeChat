@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const redisClient = require('../config/redis');
 const twilioClient = require('../config/twilio');
 const admin = require('../config/firebase');
-
+const pTimeout = require('p-timeout');
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -67,8 +67,11 @@ exports.verifyOtp = async (req, res) => {
 
     let userRecord;
     try {
-      userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber);
-    } catch (error) {
+userRecord = await pTimeout(
+  admin.auth().getUserByPhoneNumber(phoneNumber),
+     5000,
+  'Firebase Auth request timed out'
+);    } catch (error) {
       if (error.code === "auth/user-not-found") {
         const uid = uuidv4();
         userRecord = await admin.auth().createUser({ uid, phoneNumber });

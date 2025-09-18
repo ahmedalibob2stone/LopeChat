@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/scheduler.dart';
+import 'package:lopechat/features/chat/presentaion/viewmodel/chat_massage/temp_messages_viewmodel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:extended_text_field/extended_text_field.dart';
 
 import '../../../../common/Provider/Message_reply.dart';
 import '../../../../common/Provider/providers.dart';
@@ -14,16 +15,15 @@ import '../../../../common/enums/enum_massage.dart';
 import '../../../../common/utils/utills.dart';
 import '../../../../common/widgets/link/link_span_widget.dart';
 import '../../../../constant.dart';
-import '../../../profile/data/model/block/local_blocked_massage.dart';
-import '../../../profile/presentation/provider/block/vm/local_blocked_massages_provider.dart';
 import '../../../profile/presentation/provider/block/vm/viewmodel_provider.dart';
-import '../../../user/data/user_model/user_model.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
-import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
+import '../../../user/presentation/provider/user_provider.dart';
+import '../../domain/entities/chat message/local_blocked_massage.dart';
+import '../../domain/entities/chat message/message_entity.dart';
+import '../provider/chat_massage/viewmodel/chat_stream_provider.dart';
+import '../provider/chat_massage/viewmodel/local_blocked_messages_view_model_provider.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
+import '../provider/chat_massage/viewmodel/temp_messages_view_model.dart';
 import '../widgets/Message_reply.dart';
-import 'package:extended_text_field/extended_text_field.dart';
-
 
 class BottomFileforChat extends ConsumerStatefulWidget {
   final String chatId;
@@ -43,7 +43,7 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
   final TextEditingController _message = TextEditingController();
   final FocusNode focusNode = FocusNode();
   FlutterSoundRecorder? _flutterSoundRecorder;
-  final List<Map<String, dynamic>> _localBlockedMessages = [];
+
   bool isShowsendmassage = false;
   bool isShowEmoji = false;
   bool isRecorder = false;
@@ -64,6 +64,17 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     _flutterSoundRecorder = null;
     super.dispose();
   }
+
+  Future<void> openAudio() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      ShowSnakBar(context: context, content: 'تم رفض صلاحية الميكروفون!');
+      return;
+    }
+    await _flutterSoundRecorder!.openRecorder();
+    isRecorder = true;
+  }
+
   void _addLocalBlockedMessage({
     required String text,
     required EnumData type,
@@ -71,7 +82,7 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     File? file,
     String? gifUrl,
     String? repliedText,
-    String? repliedMessageType,
+    EnumData? repliedMessageType, // يجب أن يكون EnumData وليس String
   }) {
     final local = LocalBlockedMessage(
       messageId: 'local_${DateTime.now().millisecondsSinceEpoch}',
@@ -82,8 +93,8 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
       type: type,
       senderId: senderId,
       time: DateTime.now(),
-      repliedMessage: repliedText,
-      repliedMessageType: repliedMessageType,
+      repliedMessage: repliedText ?? '',
+      repliedMessageType: repliedMessageType ?? EnumData.text, // القيمة الافتراضية
       isLocalBlocked: true,
     );
 
@@ -96,283 +107,293 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     });
   }
 
-
-
-
-  Future<void> openAudio() async {
-    final status = await Permission.microphone.request();
-    if (status != PermissionStatus.granted) {
-      throw RecordingPermissionException('Mic not allowed!');
+  void sendTextMessage() async {
+    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
+    if (currentUser == null) {
+      print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
+      return;
     }
-    await _flutterSoundRecorder!.openRecorder();
-    isRecorder = true;
-  }
-
-  Future<UserModel?> _getCurrentUserModel(BuildContext context) async {
-    final currentUserEntity = await ref.read(currentUserStreamProvider.stream).first;
-    if (currentUserEntity == null) {
-      ShowSnakBar(context: context, content: 'لم يتم تحميل بيانات المستخدم');
-      return null;
-    }
-    return UserModel.fromEntity(currentUserEntity);
-  }
-
-  void sendTextMassage() async {
-    final currentUserModel = await _getCurrentUserModel(context);
-    if (currentUserModel == null) return;
-
-    final messageReply = ref.read(messageReplyProvider);
-
-    if (isShowsendmassage) {
 
 
+        final messageReply = ref.read(messageReplyProvider);
 
-      final result = await ref
-          .read(blockUserViewModelProvider.notifier)
-          .canSendMessage(
-        currentUserId: currentUserModel.uid,
-        receiverUserId: widget.chatId,
-      );
+        if (_message.text.trim().isEmpty) {
+          print("⚠️ UI → محاولة إرسال رسالة فارغة");
+          return;
+        }
 
-      result.fold(
-            (errorMsg) {
-          _addLocalBlockedMessage(
-            text: _message.text.trim(),
-            type: EnumData.text,
-            senderId: currentUserModel.uid,
-            repliedText: messageReply?.message,
-            repliedMessageType:  messageReply?.messageDate.toString(),
-            file: null
+        final url = _extractFirstUrl(_message.text.trim());
 
-          );
-          ref.read(messageReplyProvider.notifier).state = null;
-          setState(() => _message.clear());
-        },
-            (canSend) {
-              ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
-                text: _message.text.trim(),
-                reciveUserId: widget.chatId,
-                sendUser: currentUserModel,
-                messageReply: messageReply,
-                isGroupChat: widget.isGroupChat,
-              );
-              ref.read(scrollToBottomProvider.notifier).state = true;
+        if (url != null) {
+          sendLinkMessage(url);
+          return;
+        }
 
-              ref.read(messageReplyProvider.notifier).state = null;
-              setState(() => _message.clear());
-        },
-      );
-    } else {
-      // قسم التسجيل (الصوت) كما كان عندك بالضبط
-      var temp = await getTemporaryDirectory();
-      var path = '${temp.path}/flutter_sound.aac';
+        print("🔍 UI → التحقق من إمكانية الإرسال إلى ${widget.chatId} ...");
 
-      if (!isRecorder) return;
+        final result = await ref.read(blockUserViewModelProvider.notifier)
+            .canSendMessage(
+          currentUserId: currentUser.uid,
+          receiverUserId: widget.chatId,
+        );
 
-      if (isRecording) {
-        await _flutterSoundRecorder!.stopRecorder();
-        sendFileMessage(File(path), EnumData.audio);
-      } else {
-        await _flutterSoundRecorder!.startRecorder(toFile: path);
-      }
+        result.fold(
+              (errorMsg) {
+            print("⛔️ UI → لا يمكن إرسال الرسالة: $errorMsg");
 
-      setState(() => isRecording = !isRecording);
-    }
-  }
-  String? _extractFirstUrl(String input) {
-    final regex = RegExp(
-      r'((https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?)',
-      caseSensitive: false,
-    );
-    final match = regex.firstMatch(input);
-    if (match == null) return null;
-
-    var url = match.group(0)!;
-    // لو ما في scheme ضِف https://
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://$url';
-    }
-    return url;
-  }
-
-  void sendLinkMassage() async {
-    final url = _extractFirstUrl(_message.text.trim())!;
-
-    final currentUserModel = await _getCurrentUserModel(context);
-    if (currentUserModel == null) return;
-
-    final messageReply = ref.read(messageReplyProvider);
-
-    if (isShowsendmassage) {
-
-
-
-      final result = await ref
-          .read(blockUserViewModelProvider.notifier)
-          .canSendMessage(
-        currentUserId: currentUserModel.uid,
-        receiverUserId: widget.chatId,
-      );
-
-      result.fold(
-            (errorMsg) {
-          _addLocalBlockedMessage(
-              text:url,
-              type: EnumData.link,
-              senderId: currentUserModel.uid,
+            _addLocalBlockedMessage(
+              text: _message.text.trim(),
+              type: EnumData.text,
+              senderId: currentUser.uid,
               repliedText: messageReply?.message,
-              repliedMessageType:  messageReply?.messageDate.toString(),
-              file: null
+              repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
+            );
 
-          );
-          ref.read(messageReplyProvider.notifier).state = null;
-          setState(() => _message.clear());
-        },
-            (canSend) {
-          ref.read(sendMessageViewModelProvider.notifier).sendLinkMessage(
-            link: url.trim(),
-            reciveUserId: widget.chatId,
-            sendUser: currentUserModel,
-            messageReply: messageReply,
-            isGroupChat: widget.isGroupChat,
-          );
-          ref.read(scrollToBottomProvider.notifier).state = true;
+            _message.clear();
+            ref.read(messageReplyProvider.notifier).state = null;
+          },
+              (canSend) {
+            print("✅ UI → مسموح بالإرسال. سيتم استدعاء VM");
 
-          ref.read(messageReplyProvider.notifier).state = null;
-          setState(() => _message.clear());
-        },
-      );
-    } else {
-      var temp = await getTemporaryDirectory();
-      var path = '${temp.path}/flutter_sound.aac';
+            ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
+              text: _message.text.trim(),
+              sendUser: currentUser,
+              messageReply: messageReply,
+              isGroupChat: widget.isGroupChat,
+              reciveUserId: widget.chatId,
+            );
 
-      if (!isRecorder) return;
+            print("📩 UI → محاولة إرسال رسالة: ${_message.text.trim()} إلى ${widget.chatId}");
 
-      if (isRecording) {
-        await _flutterSoundRecorder!.stopRecorder();
-        sendFileMessage(File(path), EnumData.audio);
-      } else {
-        await _flutterSoundRecorder!.startRecorder(toFile: path);
-      }
+            _message.clear();
+            ref.read(messageReplyProvider.notifier).state = null;
+            ref.read(scrollToBottomProvider.notifier).state = true;
+          },
+        );
 
-      setState(() => isRecording = !isRecording);
-    }
+
   }
 
-
-  void sendFileMessage(File file, EnumData messageData) async {
-    final currentUserModel = await _getCurrentUserModel(context);
-    if (currentUserModel == null) return;
+  Future<void> sendFileMessage(File file, EnumData type) async {
+    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
+    if (currentUser == null) return;
 
     final messageReply = ref.read(messageReplyProvider);
 
-    final result = await ref
-        .read(blockUserViewModelProvider.notifier)
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+
+    // إضافة الرسالة المؤقتة للواجهة
+    ref.read(tempMessageProvider.notifier).addTempMessage(
+      TempMessage(
+        id: tempId,
+        file: file,
+        type: type,
+        time: DateTime.now(),
+      ),
+    );
+
+    // التحقق من إمكانية إرسال الرسالة
+    final result = await ref.read(blockUserViewModelProvider.notifier)
         .canSendMessage(
-      currentUserId: currentUserModel.uid,
-        receiverUserId: widget.chatId,
+      currentUserId: currentUser.uid,
+      receiverUserId: widget.chatId,
     );
 
     result.fold(
           (errorMsg) {
-        // المستخدم محظور → نضيف الرسالة محليًا مع علامة التحذير
+        // ممنوع الإرسال: حذف المؤقتة وإضافة رسالة محلية
+        ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
         _addLocalBlockedMessage(
-          text: file.path.split('/').last, // اسم الملف
-          type: messageData,
-          senderId: currentUserModel.uid,
-          repliedText: messageReply?.message,
-          repliedMessageType: messageReply?.messageDate.toString(),
-          file: file
-
-        );
-        ref.read(messageReplyProvider.notifier).state = null;
-        setState(() => _message.clear());
-
-      },
-          (canSend) {
-        // إرسال الملف إذا مسموح
-        ref.read(sendMessageViewModelProvider.notifier).sendFileMessage(
+          text: file.path.split('/').last,
+          type: type,
+          senderId: currentUser.uid,
           file: file,
-          chatId: widget.chatId,
-          senderUserDate: currentUserModel,
-          massageEnum: messageData,
-          messageReply: messageReply,
-          isGroupChat: widget.isGroupChat,
+          repliedText: messageReply?.message,
+          repliedMessageType: messageReply?.messageDate,
         );
-        ref.read(scrollToBottomProvider.notifier).state = true;
-
         ref.read(messageReplyProvider.notifier).state = null;
+      },
+          (canSend) async {
+        try {
+          // رفع الملف مع تحديث نسبة التقدم
+          final uploadedUrl = await uploadFile(file, (progress) {
+            ref.read(tempMessageProvider.notifier).updateProgress(tempId, progress);
+          });
+
+          // تم رفع الملف بالكامل
+          ref.read(tempMessageProvider.notifier).markUploadComplete(tempId);
+
+          // إرسال الرسالة إلى Firestore
+          final serverMessageId = await ref.read(sendMessageViewModelProvider.notifier)
+              .sendFileMessage(
+            file: File(uploadedUrl),
+            chatId: widget.chatId,
+            senderUserDate: currentUser,
+            massageEnum: type,
+            messageReply: messageReply,
+            isGroupChat: widget.isGroupChat,
+          );
+
+          // تحديث TempMessage بأنه تم الإرسال
+          ref.read(tempMessageProvider.notifier).markAsSent(tempId, serverMessageId);
+
+          // استبدال المؤقتة بالرسالة النهائية من السيرفر
+          ref.read(tempMessageProvider.notifier).replaceWithServerMessage(serverMessageId);
+
+          ref.read(scrollToBottomProvider.notifier).state = true;
+          ref.read(messageReplyProvider.notifier).state = null;
+        } catch (e) {
+          // في حال فشل الإرسال
+          ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
+          print("❌ Error sending file message: $e");
+        }
       },
     );
   }
 
 
+  void sendLinkMessage(String url) async {
+    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
+    if (currentUser == null) {
+      print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
+      return;
+    }
+
+
+    final messageReply = ref.read(messageReplyProvider);
+
+    final result = await ref.read(blockUserViewModelProvider.notifier)
+        .canSendMessage(
+      currentUserId: currentUser.uid,
+      receiverUserId: widget.chatId,
+    );
+
+    result.fold(
+          (errorMsg) {
+        _addLocalBlockedMessage(
+          text: url,
+          type: EnumData.link,
+          senderId: currentUser.uid,
+          repliedText: messageReply?.message,
+          repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
+        );
+        _message.clear();
+        ref.read(messageReplyProvider.notifier).state = null;
+      },
+          (canSend) {
+        ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
+          text: url,
+          sendUser: currentUser,
+          messageReply: messageReply,
+          isGroupChat: widget.isGroupChat, reciveUserId: widget.chatId,
+        );
+        _message.clear();
+        ref.read(messageReplyProvider.notifier).state = null;
+        ref.read(scrollToBottomProvider.notifier).state = true;
+      },
+    );
+  }
+
+  Future<String> uploadFile(File file, Function(double) onProgress) async {
+    // مثال على رفع ملف وهمي مع تحديث progress
+    const totalChunks = 100;
+    for (int i = 1; i <= totalChunks; i++) {
+      await Future.delayed(const Duration(milliseconds: 20));
+      onProgress(i / totalChunks); // تحديث التقدم
+    }
+
+    // بعد انتهاء الرفع، أرجع رابط الملف النهائي
+    return file.path; // هنا يجب أن ترجع URL الملف من Storage فعلي
+  }
 
   Future<void> selectGIF() async {
-    final currentUserModel = await _getCurrentUserModel(context);
-    if (currentUserModel == null) return;
+    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
+    if (currentUser == null) {
+      print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
+      return;
+    }
 
     final gif = await PickGif(context);
     final gifUrl = gif?.images?.original?.url;
 
-    if (gifUrl != null && gifUrl.isNotEmpty) {
-      final messageReply = ref.read(messageReplyProvider);
+    if (gifUrl == null || gifUrl.isEmpty) return;
 
-      ref.read(blockUserViewModelProvider.notifier)
-          .canSendMessage(
-        currentUserId: currentUserModel.uid,
-          receiverUserId: widget.chatId,
-      )
-          .then((result) {
-        result.fold(
-              (errorMsg) {
-            // مستخدم محظور → حفظ الرسالة محلياً مع الأيقونة الحمراء
-            _addLocalBlockedMessage(
-              text: gifUrl, // تخزين رابط الـ GIF كنص
-              type: EnumData.gif,
-              senderId: currentUserModel.uid,
-              repliedText: messageReply?.message,
-              repliedMessageType: messageReply?.messageDate.toString(),
-              file: null
-            );
-            ref.read(messageReplyProvider.notifier).state = null;
-            setState(() => _message.clear());
-          },
-              (canSend) {
-            // إرسال GIF عادي
-            ref.read(sendMessageViewModelProvider.notifier).sendGIFMessage(
-              gif: gifUrl,
-              chatId: widget.chatId,
-              sendUser: currentUserModel,
-              messageReply: messageReply,
-              isGroupChat: widget.isGroupChat,
-            );
-            ref.read(scrollToBottomProvider.notifier).state = true;
+    final messageReply = ref.read(messageReplyProvider);
 
-            ref.read(messageReplyProvider.notifier).state = null;
-          },
+    final result = await ref.read(blockUserViewModelProvider.notifier)
+        .canSendMessage(
+      currentUserId: currentUser.uid,
+      receiverUserId: widget.chatId,
+    );
+
+    result.fold(
+          (errorMsg) {
+        _addLocalBlockedMessage(
+          text: gifUrl,
+          type: EnumData.gif,
+          senderId: currentUser.uid,
+          repliedText: messageReply?.message,
+          repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
         );
-
-      });
-    } else {
-    }
+        ref.read(messageReplyProvider.notifier).state = null;
+      },
+          (canSend) {
+        ref.read(sendMessageViewModelProvider.notifier).sendGIFMessage(
+          gif: gifUrl,
+          chatId: widget.chatId,
+          sendUser: currentUser,
+          messageReply: messageReply,
+          isGroupChat: widget.isGroupChat,
+        );
+        ref.read(scrollToBottomProvider.notifier).state = true;
+        ref.read(messageReplyProvider.notifier).state = null;
+      },
+    );
   }
-
 
   Future<void> selectImage() async {
     File? image = await pickImageFromGallery(context);
-    if (image != null) {
-      sendFileMessage(image, EnumData.image);
-    }
+    if (image != null) sendFileMessage(image, EnumData.image);
   }
 
   Future<void> selectVideo() async {
     File? video = await pickVideoFromGallery(context);
-    if (video != null) {
-      sendFileMessage(video, EnumData.video);
-    }
+    if (video != null) sendFileMessage(video, EnumData.video);
   }
-
+  Future<void> selectMedia(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.image, color: Colors.blue),
+                title: const Text("Photo"),
+                onTap: () async {
+                  Navigator.pop(context);
+                  File? image = await pickImageFromGallery(context);
+                  if (image != null) sendFileMessage(image, EnumData.image);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.videocam, color: Colors.green),
+                title: const Text("Video"),
+                onTap: () async {
+                  Navigator.pop(context);
+                  File? video = await pickVideoFromGallery(context);
+                  if (video != null) sendFileMessage(video, EnumData.video);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void toggleEmojiKeyboard() {
     if (isShowEmoji) {
@@ -384,11 +405,55 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     }
   }
 
+  void handleAudioRecording() async {
+    if (!isRecorder) return;
+
+    final tempDir = await getTemporaryDirectory();
+    final path = '${tempDir.path}/flutter_sound.aac';
+
+    if (isRecording) {
+      final recordedPath = await _flutterSoundRecorder!.stopRecorder();
+      setState(() => isRecording = false);
+      if (recordedPath != null) sendFileMessage(File(recordedPath), EnumData.audio);
+    } else {
+      await _flutterSoundRecorder!.startRecorder(toFile: path);
+      setState(() => isRecording = true);
+    }
+  }
+
+  String? _extractFirstUrl(String input) {
+    final regex = RegExp(
+      r'((https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?)',
+      caseSensitive: false,
+    );
+    final match = regex.firstMatch(input);
+    if (match == null) return null;
+    var url = match.group(0)!;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://$url';
+    }
+    return url;
+  }
+
   @override
   Widget build(BuildContext context) {
     final messageState = ref.watch(messageViewModelProvider);
     final messageReply = ref.watch(messageReplyProvider);
     final isShowMessageReply = messageReply != null;
+    ref.listen<AsyncValue<List<MessageEntity>>>(
+      chatMessagesProvider(widget.chatId),
+          (prev, next) {
+        next.whenData((messages) {
+          for (var msg in messages) {
+            ref.read(tempMessageProvider.notifier).replaceWithServerMessage(
+              msg.messageId ?? '',
+            );
+          }
+        });
+      },
+    );
+
+
 
     return Column(
       children: [
@@ -402,7 +467,6 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
                 maxLines: 4,
                 minLines: 1,
                 specialTextSpanBuilder: LinkTextSpanBuilder(),
-
                 autocorrect: true,
                 onChanged: (val) => setState(() => isShowsendmassage = val.isNotEmpty),
                 decoration: InputDecoration(
@@ -414,29 +478,27 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: toggleEmojiKeyboard,
-                          icon: const Icon(Icons.emoji_emotions, color: kkPrimaryColor, size: 20),
-                        ),
-                        IconButton(
-                          onPressed: selectGIF,
-                          icon: const Icon(Icons.gif_outlined, color: kkPrimaryColor, size: 30),
-                        ),
-                      ],
-                    ),
+                  prefixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: toggleEmojiKeyboard,
+                        icon: const Icon(Icons.emoji_emotions, color: kkPrimaryColor, size: 20),
+                      ),
+                      IconButton(
+                        onPressed: selectGIF,
+                        icon: const Icon(Icons.gif_outlined, color: kkPrimaryColor, size: 30),
+                      ),
+                    ],
                   ),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        onPressed: selectVideo,
+                        onPressed: () => selectMedia(context),
                         icon: const Icon(Icons.attach_file, color: kkPrimaryColor, size: 20),
                       ),
+
                       IconButton(
                         onPressed: selectImage,
                         icon: const Icon(Icons.camera_alt, color: kkPrimaryColor, size: 20),
@@ -451,12 +513,13 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
               onPressed: () {
                 final url = _extractFirstUrl(_message.text.trim());
                 if (url != null) {
-                  sendLinkMassage();
+                  sendLinkMessage(url);
+                } else if (_message.text.trim().isNotEmpty) {
+                  sendTextMessage();
                 } else {
-                  sendTextMassage();
+                  handleAudioRecording();
                 }
               },
-
               backgroundColor: kkPrimaryColor,
               child: messageState.isSending
                   ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
@@ -478,9 +541,7 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
             child: EmojiPicker(
               onEmojiSelected: (type, emoji) {
                 setState(() => _message.text += emoji.emoji);
-                if (!isShowsendmassage) {
-                  setState(() => isShowsendmassage = true);
-                }
+                if (!isShowsendmassage) setState(() => isShowsendmassage = true);
               },
             ),
           ),

@@ -6,7 +6,7 @@ class GetUserByIdOnceUseCase {
 
   GetUserByIdOnceUseCase(this.repository);
 
-  Future<UserEntity> call(String uid) {
-    return repository.getUserByIdOnce(uid);
+  Future<UserEntity> call() {
+    return repository.getUserByIdOnce();
   }
 }

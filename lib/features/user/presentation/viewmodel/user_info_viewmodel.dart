@@ -19,6 +19,8 @@ class UserInfoState {
   final String? nameError;
   final String? statusError;
   final String? imageError;
+  final bool isNextLoading;
+  final bool isImageLoading;
 
   const UserInfoState({
     this.user,
@@ -26,6 +28,8 @@ class UserInfoState {
     this.nameError,
     this.statusError,
     this.imageError,
+    this.isImageLoading =false,
+    this.isNextLoading =false,
   });
 
   UserInfoState copyWith({
@@ -34,6 +38,8 @@ class UserInfoState {
     String? nameError,
     String? statusError,
     String? imageError,
+    bool? isImageLoading,
+    bool? isNextLoading,
   }) {
     return UserInfoState(
       user: user ?? this.user,
@@ -41,6 +47,8 @@ class UserInfoState {
       nameError: nameError,
       statusError: statusError,
       imageError: imageError,
+      isImageLoading: isImageLoading ?? this.isImageLoading,
+      isNextLoading: isNextLoading ?? this.isNextLoading,
     );
   }
 }
@@ -146,13 +154,13 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, imageError: null);
+    state = state.copyWith(isImageLoading: true, imageError: null);
     try {
       await _updateProfileImageUseCase(imageFile!);
     } catch (e) {
       state = state.copyWith(nameError: _mapExceptionToMessage(e));
     } finally {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isImageLoading: false);
     }
   }
 
@@ -165,11 +173,11 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
     if (!await connected) {
       state = state.copyWith(
         nameError: "Network error: please check your connection",
-        isLoading: false,
+        isNextLoading: false,
       );      return;
     }
 
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isNextLoading: true);
     try {
       await _saveUserDataToFirebaseUseCase.call(
         name: name,
@@ -179,7 +187,7 @@ class UserInfoViewModel extends StateNotifier<UserInfoState> {
     } catch (e) {
       state = state.copyWith(nameError:_mapExceptionToMessage(e));
     } finally {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isNextLoading: false);
     }
   }
 

@@ -22,6 +22,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         setState(() {});
         _videoPlayerController.setVolume(1);
       });
+
+    _videoPlayerController.addListener(() {
+      final bool isPlaying = _videoPlayerController.value.isPlaying;
+      if (isPlaying != _isPlaying) {
+        setState(() => _isPlaying = isPlaying);
+      }
+    });
   }
 
   @override
@@ -31,44 +38,38 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   }
 
   void _togglePlayPause() {
-    setState(() {
-      if (_isPlaying) {
-        _videoPlayerController.pause();
-      } else {
-        _videoPlayerController.play();
-      }
-      _isPlaying = !_isPlaying;
-    });
+    if (_isPlaying) {
+      _videoPlayerController.pause();
+    } else {
+      _videoPlayerController.play();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: _videoPlayerController.value.isInitialized
-          ? _videoPlayerController.value.aspectRatio
-          : 16 / 9,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (_videoPlayerController.value.isInitialized)
-            VideoPlayer(_videoPlayerController)
-          else
-            const Center(child: CircularProgressIndicator()),
+    if (!_videoPlayerController.value.isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-          GestureDetector(
-            onTap: _togglePlayPause,
-            child: AnimatedOpacity(
-              opacity: _isPlaying ? 0 : 1,
-              duration: const Duration(milliseconds: 300),
-              child: Icon(
-                _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                size: 60,
-                color: Colors.white.withOpacity(0.7),
-              ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        VideoPlayer(_videoPlayerController),
+
+        // زر التشغيل/الإيقاف
+        GestureDetector(
+          onTap: _togglePlayPause,
+          child: AnimatedOpacity(
+            opacity: _isPlaying ? 0 : 1, // يخفي الأيقونة أثناء التشغيل
+            duration: const Duration(milliseconds: 300),
+            child: Icon(
+              Icons.play_circle_fill,
+              size: 60,
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

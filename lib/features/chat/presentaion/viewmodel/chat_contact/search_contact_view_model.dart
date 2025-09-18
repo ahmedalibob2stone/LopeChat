@@ -8,10 +8,6 @@ import '../../../domain/usecase/chat_contact/get_archived_chats_usecase.dart';
 import '../../../domain/usecase/chat_contact/get_unarchived_chats_use_case.dart';
 import '../../../domain/usecase/chat_contact/search_contact_usecase.dart';
 import '../../../domain/usecase/chat_contact/unarchive_chat_usecase.dart';
-
-
-
-
 class SearchContactState {
   final bool isLoading;
   final List<ChatContactEntity> contacts;

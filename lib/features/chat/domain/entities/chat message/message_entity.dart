@@ -1,6 +1,18 @@
 import 'package:lopechat/common/enums/enum_massage.dart';
-
-class MessageEntity {
+abstract class BaseMessage {
+  String get messageId;
+  String get chatId;
+  String get senderId;
+  String get text;
+  DateTime get time;
+  bool get isSeen;
+  EnumData get type;
+  String get repliedMessage;
+  EnumData get repliedMessageType;
+  String get repliedTo;
+  String get prof; // رابط الصورة الشخصية للمرسل
+}
+class MessageEntity implements BaseMessage{
   final String senderId;
   final String chatId;
   final String text;

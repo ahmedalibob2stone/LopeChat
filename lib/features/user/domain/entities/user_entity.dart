@@ -21,4 +21,6 @@ class UserEntity {
     required this.statu,
     required this.blockedUsers
   });
+  factory UserEntity.empty() => UserEntity(uid: '', name: 'Guest', profile: '', isOnline: '', lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
+
 }

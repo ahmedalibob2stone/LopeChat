@@ -17,6 +17,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
     "firebase-admin": "^13.4.0",
+    "p-timeout": "^7.0.0",
     "redis": "^5.8.1",
     "twilio": "^5.8.0",
     "uuid": "^11.1.0"

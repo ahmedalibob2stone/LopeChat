@@ -10,7 +10,7 @@ class SendFileMessageUseCase {
 
   SendFileMessageUseCase(this.repository);
 
-  Future<void> execute({
+  Future<String> execute({
     required File file,
     required String chatId,
     required UserEntity senderUserDate,
@@ -18,7 +18,7 @@ class SendFileMessageUseCase {
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
-    await repository.sendFileMessage(
+    return await repository.sendFileMessage(
       file: file,
       chatId: chatId,
       senderUserDate: senderUserDate,

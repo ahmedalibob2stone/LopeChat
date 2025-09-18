@@ -6,7 +6,7 @@ class MarkMessagesAsSeenUseCase {
 
   MarkMessagesAsSeenUseCase(this.repository);
 
-  Future<void> execute(String chatId, String contactId) async {
-    await repository.markMessagesAsSeen(chatId, contactId);
+  Future<void> execute(String chatId) async {
+    await repository.markMessagesAsSeen(chatId);
   }
 }

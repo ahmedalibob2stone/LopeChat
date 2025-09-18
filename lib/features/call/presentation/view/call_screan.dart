@@ -6,7 +6,6 @@ import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../config/agora_Developer.dart';
 import '../../../contact/presentation/provider/usecases/get_app_contacts_usecases_provider.dart';
 import '../../../settings/presentation/provider/privacy/profile/vm/provider.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../domain/entites/callentites.dart';
 import '../provider/viewmode/provider.dart';

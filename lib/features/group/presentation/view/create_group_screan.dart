@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../common/utils/utills.dart';
+import '../../../../common/widgets/contact_count_widget.dart';
 import '../../../../constant.dart';
 import '../../../contact/presentation/provider/vm/get_all_app_contact_viewmodel_provider.dart.dart';
 import '../../../settings/presentation/provider/privacy/group/vm/viewmodel_provider.dart';
@@ -130,21 +131,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                 fontSize: MediaQuery.of(context).size.width * 0.05,
               ),
             ),
-            const SizedBox(height: 3),
-            ref.watch(contactsControllerProvider).when(
-              data: (allContacts) {
-                return Text(
-                  "${allContacts[0].length} contact${allContacts[0].length == 1 ? '' : 's'} on WhatsApp",
-                  style:
-                  TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
-                );
-              },
-              error: (e, t) => const SizedBox(),
-              loading: () => Text(
-                'counting...',
-                style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
-              ),
-            ),
+            ContactsCountWidget()
           ],
         ),
         actions: [

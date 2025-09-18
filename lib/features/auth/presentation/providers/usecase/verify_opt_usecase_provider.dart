@@ -6,7 +6,9 @@ import '../../../domain/repositories/auth_repository.dart';
 import '../../../domain/usecase/verify_otp_usecase.dart';
 
 final authApiDataSourceProvider = Provider<AuthApiDataSource>((ref) {
-  return AuthApiDataSource('https://your-api-base-url.com');
+  final String baseUrl = 'https://lopechat.onrender.com';
+
+  return AuthApiDataSource( baseUrl: baseUrl);
 });
 
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {

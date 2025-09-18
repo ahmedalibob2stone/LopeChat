@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/interface_user_repository.dart';
@@ -11,7 +10,6 @@ class UserRepository implements IUserRepository {
 
   UserRepository({required this.remoteDataSource});
 
-  /// ✅ بيانات المستخدم الحالي (مرة واحدة)
   @override
   Future<UserEntity?> getCurrentUserData() async {
     try {
@@ -25,35 +23,26 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  /// ✅ Stream لبيانات المستخدم الحالي
   @override
   Stream<UserEntity?> myData() {
-    final uid = remoteDataSource.currentUserId;
-    if (uid == null || uid.isEmpty) {
-      return Stream.value(null);
-    }
-
-    return remoteDataSource.userDocStream(uid).map((doc) {
-      final data = doc.data();
-      if (data == null) return null;
-      return UserModel.fromMap(data).toEntity();
+    return remoteDataSource.currentUserStream().map((userModel) {
+      if (userModel == null) return null;
+      return userModel.toEntity();
     });
   }
 
-  /// ✅ Stream لمستخدم معين بالـ UID
+
   @override
   Stream<UserEntity> getUserById(String uid) {
     return remoteDataSource.getUserById(uid).map((model) => model.toEntity());
   }
 
-  /// ✅ بيانات مستخدم معين (مرة واحدة)
   @override
-  Future<UserEntity> getUserByIdOnce(String uid) async {
-    final model = await remoteDataSource.getUserByIdOnce(uid);
+  Future<UserEntity> getUserByIdOnce() async {
+    final model = await remoteDataSource.getUserByIdOnce();
     return model.toEntity();
   }
 
-  /// ✅ حفظ بيانات جديدة في Firebase
   @override
   Future<void> saveUserDatetoFirebase({
     required String name,
@@ -75,7 +64,6 @@ class UserRepository implements IUserRepository {
     return remoteDataSource.updateUserStatus(status);
   }
 
-  /// ✅ تحديث صورة البروفايل
   @override
   Future<void> updateUserProfilePicture(File file) {
     return remoteDataSource.updateUserProfilePicture(file);

@@ -7,11 +7,11 @@ import '../model/verify_otp_response_model.dart';
 class AuthApiDataSource {
   final String baseUrl;
 
-  AuthApiDataSource(this.baseUrl);
+  AuthApiDataSource( {required this.baseUrl});
 
   Future<bool> sendOtp(String phoneNumber) async {
     final response = await http.post(
-      Uri.parse('https://lopechat.onrender.com/auth/send-otp'),
+      Uri.parse('$baseUrl/auth/send-otp'),
 
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'phoneNumber': phoneNumber}),
@@ -28,7 +28,7 @@ class AuthApiDataSource {
 
   Future<VerifyOtpResponse?> verifyOtp(String phoneNumber, String otp) async {
     final response = await http.post(
-      Uri.parse('https://lopechat.onrender.com/auth/verify-otp'),
+      Uri.parse('$baseUrl/auth/verify-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'phoneNumber': phoneNumber, 'otp': otp}),
     );

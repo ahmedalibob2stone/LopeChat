@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lopechat/responsive/mobile_screen_Layout.dart';
 import 'constant.dart';
 import 'features/auth/presentation/screan/OTP_screan.dart';
 import 'features/auth/presentation/screan/login_screan.dart';
 import 'features/chat/presentaion/screan/archived_chats_screen.dart';
 import 'features/chat/presentaion/screan/mobile_chat_screan.dart';
 import 'features/contact/presentation/view/newpage.dart';
+import 'features/contact/presentation/view/select_contact_screan.dart';
+import 'features/contact/presentation/view/widget/contacts_screan.dart';
 import 'features/group/presentation/view/create_group_screan.dart';
 import 'features/group/presentation/view/group_member.dart';
 
@@ -51,8 +54,10 @@ import 'features/settings/presentation/screan/settings/privacy/status/status_pri
 import 'features/settings/presentation/screan/settings/profile_screan/update_profile_screan.dart';
 import 'features/status/presentation/screan/status_screan.dart';
 import 'features/status/presentation/screan/widget/select_status_screan.dart';
+import 'features/user/data/user_model/user_model.dart';
 import 'features/user/presentation/ui/ckeck_user.dart';
 import 'features/user/presentation/ui/user_info_screan.dart';
+import 'features/welcome/screans/landing_screan.dart';
 
 
 class OnGenerateRoutes{
@@ -61,6 +66,10 @@ class OnGenerateRoutes{
       case PageConst.checkUser:
         {
           return MaterialPageRoute(builder: (_) => CheckUserScreen());
+        }
+      case PageConst.Welcome_Screan:
+        {
+          return MaterialPageRoute(builder: (_) => Welcome_Screan());
         }
 
       case PageConst.LoginScrean:
@@ -86,11 +95,28 @@ class OnGenerateRoutes{
         }
       case PageConst.ContactsScrean:
 
+
+        {
+          return MaterialPageRoute(
+              builder: (context) =>
+
+            ContactPage()
+
+          );
+        }
+
       case PageConst.AddAccountScreen:
         {
           return routeBuilder(
               AddAccountScreen());
         }
+
+      case PageConst.MobileScreenLayout:
+        {
+          return routeBuilder(
+              MobileScreenLayout());
+        }
+
       case PageConst.ContactsScrean:
         {
           return MaterialPageRoute(
@@ -117,8 +143,6 @@ class OnGenerateRoutes{
         }
       case PageConst.status:
         final photofromgallery = settings.arguments as File;
-
-
             {
           return routeBuilder(
               SelectStatusScreen(file: photofromgallery,));
@@ -131,17 +155,7 @@ class OnGenerateRoutes{
         final PhotoUrl = arguments['PhotoUrl'] ?? 'default_photo_url';
         final massage = arguments['PhotoUrl'] ?? 'default_photo_url';
         final uid = arguments['uid'] ?? 'Unknown';
-        if (
 
-        username == null ||
-            profilePic == null
-            || phoneNumber == null ||
-            PhotoUrl == null
-            || massage == null
-            || uid == null
-        ) {
-          Container(child: Text('Invalid status data'));
-        }
 
          {
           return routeBuilder(

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../../../main.dart';
 import '../../../../../data/datasource/privacy/advanced/advanced_privacy_datasource.dart';
 import '../../../../../data/datasource/privacy/advanced/advanced_privacy_local_datasorce.dart';
 import '../../../../../data/datasource/privacy/advanced/advanced_privacy_remote_datasource_impl.dart';
@@ -15,10 +16,7 @@ final advancedPrivacyRemoteDataSourceProvider = Provider<AdvancedPrivacyRemoteDa
   return AdvancedPrivacyRemoteDataSourceImpl(firestore: FirebaseFirestore.instance); // إذا كان يحتاج مزودات أخرى، ضفها هنا
 });
 
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError(
-  );
-});
+
 final advancedPrivacyLocalDataSourceProvider = Provider<AdvancedPrivacyLocalDatasource>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return AdvancedPrivacyLocalDatasourceImpl( prefs);

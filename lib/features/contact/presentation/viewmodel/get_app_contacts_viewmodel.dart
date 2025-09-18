@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../user/domain/entities/user_entity.dart';
 import '../../domain/usecase/get_app_contacts.dart';
 
-enum ContactsStatus { initial, loading, loaded, error }
+enum ContactsStatus { initial, loading, loaded, error, noInternet }
 
 class ContactsState {
   final ContactsStatus status;
@@ -57,6 +57,4 @@ class GetAppContactsViewModel extends StateNotifier<ContactsState> {
       );
     }
   }
-
-
 }

@@ -5,11 +5,9 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
 import '../../../settings/presentation/provider/privacy/camera effect/vm/camera_affects_viewmodel_provider.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../provider/viewmode/provider.dart';
 import 'call_screan.dart';
-import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 
 class CallListScreen extends ConsumerWidget {
   final bool isGroupChat;

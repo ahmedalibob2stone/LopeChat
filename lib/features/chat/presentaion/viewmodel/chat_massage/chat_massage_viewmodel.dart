@@ -60,15 +60,18 @@ class MessageViewModel extends StateNotifier<MessageState> {
     required this.markMessageAsSeenUseCase,
   }) : super(MessageState());
 
+
   Future<void> sendTextMessage({
     required String text,
     required String chatId,
     required UserModel sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
+    UserModel? receiverUser, // نضيف خيار تمرير receiver مباشرة
   }) async {
     try {
       state = state.copyWith(isSending: true);
+
       await sendTextMessageUseCase.execute(
         text: text,
         chatId: chatId,
@@ -76,6 +79,7 @@ class MessageViewModel extends StateNotifier<MessageState> {
         messageReply: messageReply,
         isGroupChat: isGroupChat,
       );
+
       state = state.copyWith(isSending: false, error: null);
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString());
@@ -147,7 +151,7 @@ class MessageViewModel extends StateNotifier<MessageState> {
   Future<void> markMessagesAsSeen(String chatId, String contactId) async {
     try {
       state = state.copyWith(isUpdating: true);
-      await markMessageAsSeenUseCase.execute(chatId, contactId);
+      await markMessageAsSeenUseCase.execute(chatId);
       state = state.copyWith(isUpdating: false);
     } catch (e) {
       state = state.copyWith(isUpdating: false, error: e.toString());

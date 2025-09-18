@@ -51,9 +51,8 @@ class _ProfileLinksPrivacyScreenState
     final notifier = ref.read(linksPrivacyViewModelProvider.notifier);
 
     if (value == 'contacts_except') {
-      final allContactsNested = await ref.read(contactsControllerProvider.notifier).getAllContactUseCase();
-      final allContacts = allContactsNested.expand((list) => list).toList();
-
+      final contactsState = ref.read(contactsControllerProvider);
+      final allContacts = contactsState.appContacts;
 
         final selectedUids = await Navigator.push<List<String>>(
           context,

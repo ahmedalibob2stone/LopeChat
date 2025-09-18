@@ -96,9 +96,10 @@ class VerifyOtpViewModel extends StateNotifier<VerifyOtpState> {
           errorMessage: "Wrong verification code",
           attemptsLeft: result?.attempts ?? state.attemptsLeft,
         );
-        _startResendCountdown(); // ✅ فقط عند رفض الكود من السيرفر
+        _startResendCountdown();
       } else {
         await _signInWithTokenUseCase.execute(result.token!);
+
         state = state.copyWith(status: VerifyOtpStatus.verified, errorMessage: null);
       }
     } catch (e) {

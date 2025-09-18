@@ -5,7 +5,6 @@ import 'package:story_view/story_view.dart';
 
 import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../../common/widgets/Loeading.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../viewmodel/provider/delete_status_viewmodel_provider.dart';
 

@@ -52,6 +52,7 @@ class   UserModel extends UserEntity {
     );
   }
 
+  factory UserModel.empty() => UserModel(uid: '', name: 'Guest', profile: '', isOnline: '', lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
@@ -82,4 +83,5 @@ class   UserModel extends UserEntity {
       'blockedUsers':blockedUsers
     };
   }
+
 }

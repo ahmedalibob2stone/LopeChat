@@ -16,7 +16,6 @@ final getUserByIdOnceUseCaseProvider = Provider<GetUserByIdOnceUseCase>((ref) {
 });
 
 final getCurrentUserDataUseCaseProvider = Provider<GetCurrentUserDataUseCase>((ref) {
-  final getCurrentUid = ref.read(getCurrentUserIdUseCaseProvider);
   final getUserByIdOnce = ref.read(getUserByIdOnceUseCaseProvider);
-  return GetCurrentUserDataUseCase(getCurrentUid, getUserByIdOnce);
+  return GetCurrentUserDataUseCase( getUserByIdOnce);
 });

@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/usecase/chat_group_usecase/delete_group_chat_messages_usecase.dart';
-
-
 class DeleteGroupChatState {
   final bool isLoading;
   final bool isSuccess;

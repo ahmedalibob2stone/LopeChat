@@ -7,7 +7,7 @@ import '../../constant.dart';
 
 class SplashScreen extends StatefulWidget {
   final Duration delay;
-  const SplashScreen({Key? key, this.delay = const Duration(seconds: 3)}) : super(key: key);
+  const SplashScreen({Key? key, this.delay = const Duration(seconds: 10)}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -17,10 +17,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(widget.delay, () {
-      Navigator.pushReplacementNamed(context, PageConst.checkUser);
+    Future.delayed(widget.delay, () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, PageConst.checkUser);
+      }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {

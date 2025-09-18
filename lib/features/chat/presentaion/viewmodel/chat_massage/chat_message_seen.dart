@@ -7,7 +7,7 @@ class ChatSeenViewModel extends StateNotifier<void> {
 
   ChatSeenViewModel(this.markMessagesAsSeenUseCase) : super(null);
 
-  Future<void> markMessageAsSeen(String chatId, String messageId) async {
-    await markMessagesAsSeenUseCase.execute(chatId, messageId);
+  Future<void> markMessageAsSeen(String chatId) async {
+    await markMessagesAsSeenUseCase.execute(chatId);
   }
 }

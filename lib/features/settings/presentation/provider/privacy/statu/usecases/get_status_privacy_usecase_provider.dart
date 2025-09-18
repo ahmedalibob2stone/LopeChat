@@ -9,11 +9,7 @@ import '../../../../../data/datasource/privacy/statu/status_privacy_remote_datas
 import '../../../../../data/repository/privacy/statu/status_privacy_repository_impl.dart';
 import '../../../../../domain/repository/privacy/statu/status_privacy_repository.dart';
 import '../../../../../domain/usecases/privacy/statu/get_status_privacy_usecase.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError();
-});
+import 'package:lopechat/main.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;

@@ -9,12 +9,11 @@ abstract class IUserRepository {
 
   /// Stream لمتابعة بيانات المستخدم الحالي
   Stream<UserEntity?> myData();
-
   /// Stream لمتابعة بيانات مستخدم محدد بالـ UID
   Stream<UserEntity> getUserById(String uid);
 
   /// جلب بيانات مستخدم محدد مرة واحدة
-  Future<UserEntity> getUserByIdOnce(String uid);
+  Future<UserEntity> getUserByIdOnce();
 
   /// حفظ بيانات المستخدم في Firebase
   Future<void> saveUserDatetoFirebase({

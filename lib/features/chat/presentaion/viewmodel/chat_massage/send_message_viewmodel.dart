@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../common/Provider/Message_reply.dart';
 import '../../../../../common/enums/enum_massage.dart';
 import '../../../../user/data/user_model/user_model.dart';
+import '../../../../user/domain/entities/user_entity.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_file_message_usecase.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_gif_message_usecase.dart';
 import '../../../domain/usecase/chat_massage_usecase/send_link_message_usecase.dart';
@@ -50,63 +51,71 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
   Future<void> sendTextMessage({
     required String text,
     required String reciveUserId,
-    required UserModel sendUser,
+    required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
 
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-      await sendTextMessageUseCase.execute(
+       sendTextMessageUseCase.execute(
         text: text,
         chatId: reciveUserId,
-        sendUser: sendUser.toEntity(),
+        sendUser: sendUser,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
       );
       state = state.copyWith(isSending: false, isSuccess: true);
-    } catch (e) {
+    } catch (e,st) {
+      print("❌ VM Error in sendTextMessage: $e");
+      print(st);
       state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
+     // state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
     }
   }
-
-  Future<void> sendFileMessage({
+  Future<String> sendFileMessage({
     required File file,
     required String chatId,
-    required UserModel senderUserDate,
+    required UserEntity senderUserDate,
     required EnumData massageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
     try {
-      state = state.copyWith(isSending: true, error: null, isSuccess: false);
-      await sendFileMessageUseCase.execute(
+      state = state.copyWith(isSending: true, error: null);
+
+      final serverMessageId = await sendFileMessageUseCase.execute(
         file: file,
         chatId: chatId,
-        senderUserDate: senderUserDate.toEntity(),
+        senderUserDate: senderUserDate,
         massageEnum: massageEnum,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
       );
+
       state = state.copyWith(isSending: false, isSuccess: true);
+      return serverMessageId; // ✅ الآن النوع صحيح
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
+      rethrow;
     }
   }
+
+
 
   Future<void> sendGIFMessage({
     required String gif,
     required String chatId,
-    required UserModel sendUser,
+    required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-      await sendGIFMessageUseCase.execute(
+       sendGIFMessageUseCase.execute(
         gif: gif,
         chatId: chatId,
-        sendUser: sendUser.toEntity(),
+        sendUser: sendUser,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
       );
@@ -125,7 +134,7 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-      await sendLinkMessageUseCase.call(
+       sendLinkMessageUseCase.call(
           link: link,
         chatId: reciveUserId,
         sendUser: sendUser.toEntity(),

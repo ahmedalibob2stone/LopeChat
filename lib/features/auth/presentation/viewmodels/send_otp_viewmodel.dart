@@ -48,11 +48,6 @@ class SendOtpViewModel extends StateNotifier<SendOtpState> {
       _setError(e.toString());
     }
   }
-
-  void _setError(String message) {
-    state = state.copyWith(status: SendOtpStatus.error, errorMessage: message);
-  }
-
   String _mapExceptionToMessage(dynamic e) {
     final error = e.toString().toLowerCase();
     if (error.contains("network") || error.contains("socket")) {
@@ -65,4 +60,9 @@ class SendOtpViewModel extends StateNotifier<SendOtpState> {
       return "An unexpected error occurred. Please try again later.";
     }
   }
+  void _setError(String message) {
+    state = state.copyWith(status: SendOtpStatus.error, errorMessage: message);
+  }
+
+
 }

@@ -10,12 +10,10 @@ import '../../../../../constant.dart';
 import '../../../../common/Provider/profile_phote_visiblity_provider.dart';
 import '../../../chat/presentaion/provider/chat_config/viewmodel/provider.dart';
 import '../../../chat/presentaion/provider/user status/vm/provider.dart';
-import '../../../contact/presentation/provider/usecases/get_app_contacts_usecases_provider.dart';
+import '../../../contact/presentation/provider/stream/gat_app_contact_stream_provider.dart';
 import '../../../settings/presentation/provider/privacy/last seen and online/vm/provider.dart';
-import '../../../user/presentation/provider/stream_provider/get_user_data_stream_provider.dart';
 
 import '../../../user/presentation/provider/stream_provider/stream_providers.dart';
-import '../../../user/presentation/provider/stream_provider/user_by_id_provider.dart';
 import '../provider/block/vm/viewmodel_provider.dart';
 import '../provider/lock/viewmodel/provider.dart';
 import '../provider/report/vm/provider.dart';

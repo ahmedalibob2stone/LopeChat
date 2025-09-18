@@ -8,8 +8,6 @@ import '../../../domain/usecase/chat_group_usecase/get_chat_group_usecase.dart';
 import '../../../domain/usecase/chat_group_usecase/mark_group_messages_asSeen_usecase.dart';
 import '../../../domain/usecase/chat_group_usecase/open_group_chat_usecase.dart';
 import '../../../domain/usecase/chat_group_usecase/search_group_usecase.dart';
-
-
 class ChatGroupState {
   final bool isLoading;
   final bool isSuccess;

@@ -9,7 +9,4 @@ class SignInWithTokenUseCase {
     await _firebaseAuth.signInWithCustomToken(token);
   }
 
-  String? getCurrentUserId() {
-    return _firebaseAuth.currentUser?.uid;
-  }
 }

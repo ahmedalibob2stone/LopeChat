@@ -29,9 +29,4 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
 
-  @override
-  String? getCurrentUserId() {
-
-    return null;
-  }
 }

@@ -2,8 +2,7 @@ import 'dart:io';
 import '../../../../common/Provider/Message_reply.dart';
 import '../../../../common/enums/enum_massage.dart';
 import '../../../user/domain/entities/user_entity.dart';
-import '../../../user/data/user_model/user_model.dart';
-import '../entities/message_entity.dart';
+import '../entities/chat message/message_entity.dart';
 
 abstract class IChatMessageRepository {
   Future<void> sendTextMessage({
@@ -14,7 +13,7 @@ abstract class IChatMessageRepository {
     required bool isGroupChat,
   });
 
-  Future<void> sendFileMessage({
+  Future<String> sendFileMessage({
     required File file,
     required String chatId,
     required UserEntity senderUserDate,
@@ -54,5 +53,5 @@ abstract class IChatMessageRepository {
       String messageId,
       );
 
-  Future<void> markMessagesAsSeen(String chatId, String contactId);
+  Future<void> markMessagesAsSeen(String chatId);
 }

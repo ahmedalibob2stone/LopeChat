@@ -30,3 +30,20 @@ extension ConverMessage on String {
     }
   }
 }
+String getContactMessageText(EnumData type) {
+  switch (type) {
+    case EnumData.image:
+      return '📷 Photo';
+    case EnumData.video:
+      return '📸 Video';
+    case EnumData.audio:
+      return '🎵 Audio';
+    case EnumData.gif:
+      return 'GIF';
+    case EnumData.link:
+      return '🔗 Link';
+    default:
+      return 'File';
+  }
+}
+

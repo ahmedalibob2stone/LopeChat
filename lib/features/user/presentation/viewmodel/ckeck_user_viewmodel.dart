@@ -27,7 +27,7 @@ class CheckUserState {
   factory CheckUserState.initial() {
     return const CheckUserState(
       isLoading: true,
-      isSuccess: false, // البداية false لأننا لم نجلب البيانات بعد
+      isSuccess: false,
       errorMessage: null,
       user: null,
     );
@@ -64,6 +64,8 @@ class CheckUserViewModel extends StateNotifier<CheckUserState> {
     _subscription?.cancel();
     _subscription = _getMyDataStreamUseCase().listen(
           (user) {
+        print("🎯 ViewModel: user from stream = $user");
+
         if (user == null) {
           state = state.copyWith(
             isLoading: false,
@@ -79,6 +81,7 @@ class CheckUserViewModel extends StateNotifier<CheckUserState> {
         }
       },
       onError: (err) {
+        print("❌ ViewModel Error: $err");
         state = state.copyWith(
           isLoading: false,
           isSuccess: false,
@@ -86,6 +89,7 @@ class CheckUserViewModel extends StateNotifier<CheckUserState> {
         );
       },
     );
+
   }
 
   @override

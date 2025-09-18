@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../constant.dart';
-import '../../../../../../user/presentation/provider/stream_provider/get_user_data_by_id_stream_provider.dart';
 import '../../../../../../user/presentation/provider/stream_provider/stream_providers.dart';
 import '../../../../provider/account/account manage/vm/provider.dart';
 

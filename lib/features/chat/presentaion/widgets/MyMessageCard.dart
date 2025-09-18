@@ -1,3 +1,4 @@
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:swipe_to/swipe_to.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../common/enums/enum_massage.dart';
 import '../../../../constant.dart';
+import '../../domain/entities/chat message/temp_message_entity.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
 import 'DisplayTypeofMassage.dart';
 
@@ -25,6 +27,8 @@ class MyMessageCard extends ConsumerWidget {
   final String messageId;
   final String profileUrl;
   final bool isLocalBlocked;
+  final bool isTempMessage;
+  final TempMessageWrapper? tempMessage;
 
   const MyMessageCard({
     Key? key,
@@ -41,26 +45,26 @@ class MyMessageCard extends ConsumerWidget {
     required this.isSeen,
     required this.profileUrl,
     this.isLocalBlocked = false,
-
+    this.isTempMessage = false,
+    this.tempMessage,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isReplying = repliedText.isNotEmpty;
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery
+        .of(context)
+        .size
+        .width;
     return SwipeTo(
       onLeftSwipe: (_) => onLeftSwipe(),
       child: Align(
         alignment: Alignment.centerRight,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: width * 0.8,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          constraints: BoxConstraints(maxWidth: width * 0.8),
+          child: Stack(
             children: [
               _buildMessageCard(context, ref, isReplying),
-             // _buildProfileImage(),
               if (isLocalBlocked)
                 Positioned(
                   right: 5,
@@ -78,7 +82,8 @@ class MyMessageCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildMessageCard(BuildContext context, WidgetRef ref, bool isReplying) {
+  Widget _buildMessageCard(BuildContext context, WidgetRef ref,
+      bool isReplying) {
     return InkWell(
       onLongPress: () => _onMessageLongPress(context, ref),
       child: Card(
@@ -95,13 +100,10 @@ class MyMessageCard extends ConsumerWidget {
                   ? const EdgeInsets.fromLTRB(20, 5, 25, 20)
                   : const EdgeInsets.fromLTRB(5, 5, 5, 25),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isReplying) _buildReplyMessage(context),
-                  DisplayTypeofMassage(
-                    message: message,
-                    type: type,
-                  ),
+                  _buildMessageContent(context),
                 ],
               ),
             ),
@@ -118,9 +120,11 @@ class MyMessageCard extends ConsumerWidget {
       children: [
         Text(
           username,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme
+              .of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 3),
         Container(
@@ -129,10 +133,7 @@ class MyMessageCard extends ConsumerWidget {
             color: Colors.grey.withValues(),
             borderRadius: const BorderRadius.all(Radius.circular(5)),
           ),
-          child: DisplayTypeofMassage(
-            message: repliedText,
-            type: repliedMessageType,
-          ),
+          child: _buildMessageContent(context),
         ),
         const SizedBox(height: 8),
       ],
@@ -147,21 +148,22 @@ class MyMessageCard extends ConsumerWidget {
         children: [
           Text(
             date,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.white60,
-            ),
+            style: const TextStyle(fontSize: 10, color: Colors.white60),
           ),
           const SizedBox(width: 1),
           Icon(
-            isSeen ? Icons.done_all : Icons.done,
+            isTempMessage ? Icons.access_time : (isSeen ? Icons.done_all : Icons
+                .done),
             size: 15,
-            color: isSeen ? Colors.blue : Colors.white60,
+            color: isTempMessage ? Colors.grey : (isSeen ? Colors.blue : Colors
+                .white60),
           ),
+
         ],
       ),
     );
   }
+
   Widget _buildProfileImage() {
     return Padding(
       padding: const EdgeInsets.only(left: 5),
@@ -183,7 +185,9 @@ class MyMessageCard extends ConsumerWidget {
               SimpleDialogOption(
                 child: const Text("Delete Message"),
                 onPressed: () {
-                  ref.read(deleteMessageViewModelProvider.notifier).deleteMessage(
+                  ref
+                      .read(deleteMessageViewModelProvider.notifier)
+                      .deleteMessage(
                     context: context,
                     chatId: chatId,
                     messageId: messageId,
@@ -197,6 +201,7 @@ class MyMessageCard extends ConsumerWidget {
       );
     }
   }
+
   RichText _buildRichText(String text) {
     final linkRegex = RegExp(
       r'((https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?)',
@@ -208,16 +213,20 @@ class MyMessageCard extends ConsumerWidget {
 
     for (final match in linkRegex.allMatches(text)) {
       if (match.start > start) {
-        children.add(TextSpan(text: text.substring(start, match.start), style: const TextStyle(color: Colors.white)));
+        children.add(TextSpan(
+            text: text.substring(start, match.start),
+            style: const TextStyle(color: Colors.white)));
       }
       final url = text.substring(match.start, match.end);
       children.add(
         TextSpan(
           text: url,
-          style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+          style: const TextStyle(
+              color: Colors.blue, decoration: TextDecoration.underline),
           recognizer: TapGestureRecognizer()
             ..onTap = () async {
-              final uri = Uri.parse(url.startsWith('http') ? url : 'https://$url');
+              final uri =
+              Uri.parse(url.startsWith('http') ? url : 'https://$url');
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
@@ -228,10 +237,111 @@ class MyMessageCard extends ConsumerWidget {
     }
 
     if (start < text.length) {
-      children.add(TextSpan(text: text.substring(start), style: const TextStyle(color: Colors.white)));
+      children.add(TextSpan(
+          text: text.substring(start),
+          style: const TextStyle(color: Colors.white)));
     }
 
     return RichText(text: TextSpan(children: children));
   }
-}
 
+  Widget _buildMessageContent(BuildContext context) {
+    if (isTempMessage && tempMessage != null) {
+      final temp = tempMessage!.temp;
+
+      switch (type) {
+        case EnumData.text:
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(color: Colors.white),
+              ),
+              if (temp.showProgress)
+                LinearProgressIndicator(
+                  value: temp.progressValue,
+                  color: Colors.blue,
+                  backgroundColor: Colors.grey[300],
+                ),
+            ],
+          );
+
+        case EnumData.image:
+        // تعديل هنا لضبط حجم الصورة المؤقتة
+          return Stack(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.8, // نفس حجم رسائل Firestore
+                  maxHeight: 250, // يمكنك تعديلها إذا أحببت ارتفاع مختلف
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.file(
+                    temp.file!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+        case EnumData.video:
+          return Stack(
+            children: [
+              const Icon(Icons.videocam, size: 80, color: Colors.white),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+        case EnumData.audio:
+          return Stack(
+            children: [
+              const Icon(Icons.audiotrack, size: 80, color: Colors.white),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+        default:
+          return DisplayTypeofMassage(message: message, type: type);
+      }
+    } else {
+      return DisplayTypeofMassage(message: message, type: type);
+    }
+  }
+}

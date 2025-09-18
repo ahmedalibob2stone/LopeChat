@@ -45,6 +45,11 @@ static const  String otp_screan="OTP_Screan";
   static const  String ProfileScreen="ProfileScreen";
   static const  String ContactsScrean="ContactsScrean";
   static const  String mobileChatScrean="MobileChatScrean";
+  static const  String MobileScreenLayout="MobileScreenLayout";
+  static const  String Welcome_Screan="Welcome_Screan";
+
+  // Welcome_Screan();;
+
   static const  String status="SelectStatusScrean";
   static const  String StatusScrean="StatusScrean";
   static const  String GroupScrean="GroupScrean";

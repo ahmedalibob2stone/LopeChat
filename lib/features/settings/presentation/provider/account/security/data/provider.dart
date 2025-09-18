@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../../../main.dart';
 import '../../../../../data/datasource/account/security/security_local_datasorce.dart';
 import '../../../../../data/repository/account/security/security_repository_impl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../privacy/advanced/usecases/get_disable_link_previews_usecase_provider.dart';
 
 
 final securitySettingsLocalDataSourceProvider = Provider<SecuritySettingsLocalDataSource>(
@@ -20,6 +23,3 @@ final securitySettingsRepositoryProvider = Provider<SecuritySettingsRepository>(
 );
 
 
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError(); // سيتم تهيئته في main()
-});

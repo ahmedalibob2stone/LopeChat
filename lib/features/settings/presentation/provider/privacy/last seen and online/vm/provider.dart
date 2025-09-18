@@ -4,14 +4,9 @@ import '../../../../../domain/usecases/privacy/last seen and online/get_last_see
 import '../../../../../domain/usecases/privacy/last seen and online/update_last_seen_and_online_usecase.dart';
 import '../../../../viewmodel/privacy/last seen and online/privacy_settings_viewmodel.dart';
 import '../usecase/get_last_seen_and_online_usecase_provider.dart';
+import '../usecase/update_last_seen_and_online_usecase_provider.dart';
 
-final getLastSeenAndOnlineUseCaseProvider = Provider<GetLastSeenAndOnlineUseCase>((ref) {
-  throw UnimplementedError();
-});
 
-final updateLastSeenAndOnlineUseCaseProvider = Provider<UpdateLastSeenAndOnlineUseCase>((ref) {
-  throw UnimplementedError();
-});
 
 final lastSeenAndOnlineViewModelProvider =
 StateNotifierProvider<LastSeenAndOnlineViewModel, LastSeenAndOnlineState>(
