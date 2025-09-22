@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth.routes');
 const agoraRoutes = require('./routes/agora.routes');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(bodyParser.json());
 
 const limiter = rateLimit({
