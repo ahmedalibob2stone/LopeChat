@@ -1,32 +1,24 @@
-// تحميل متغيرات البيئة من .env
-require('dotenv').config();
+const redis = require('redis');
 
-const twilio = require('twilio');
+const redisClient = redis.createClient({
+  url: process.env.REDIS_URL,
+  password: process.env.REDIS_PASSWORD
+});
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-const toNumber = "+967739506810";
-
-// التحقق من أن المتغيرات تم قراءتها
-console.log("SID:", accountSid);
-console.log("TOKEN:", authToken ? "Loaded" : "Missing");
-console.log("FROM:", fromNumber);
-
-const client = twilio(accountSid, authToken);
+redisClient.on('error', (err) => console.error('Redis Error', err));
 
 (async () => {
   try {
-    const message = await client.messages.create({
-      body: "Test OTP message from LopeChat",
-      from: fromNumber,
-      to: toNumber,
-    });
-    console.log("✅ Message sent successfully!");
-    console.log("SID:", message.sid);
-    console.log("Status:", message.status);
-  } catch (error) {
-    console.error("❌ Failed to send message:");
-    console.error(error);
+    await redisClient.connect();
+    console.log("✅ Redis connected");
+
+    // تجربة التخزين
+    await redisClient.setEx('test-key', 60, 'hello');
+    const value = await redisClient.get('test-key');
+    console.log('Value from Redis:', value); // يجب أن تطبع 'hello'
+
+    await redisClient.quit();
+  } catch (err) {
+    console.error('Failed to connect Redis', err);
   }
 })();

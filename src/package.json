@@ -13,13 +13,13 @@
   "dependencies": {
     "agora-token": "^2.0.5",
     "body-parser": "^2.2.0",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
-    "firebase-admin": "^13.4.0",
+    "express-rate-limit": "^8.1.0",
+    "firebase-admin": "^13.5.0",
     "p-timeout": "^7.0.0",
-    "redis": "^5.8.1",
-    "twilio": "^5.8.0",
+    "redis": "^5.8.2",
+    "twilio": "^5.10.0",
     "uuid": "^11.1.0"
   }
 }

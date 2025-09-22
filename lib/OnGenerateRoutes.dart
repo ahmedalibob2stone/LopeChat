@@ -61,32 +61,32 @@ import 'features/welcome/screans/landing_screan.dart';
 
 
 class OnGenerateRoutes{
-  static Route<dynamic>? route(RouteSettings settings) {
-    switch (settings.name) {
-      case PageConst.checkUser:
-        {
-          return MaterialPageRoute(builder: (_) => CheckUserScreen());
-        }
-      case PageConst.Welcome_Screan:
-        {
-          return MaterialPageRoute(builder: (_) => Welcome_Screan());
-        }
+    static Route<dynamic>? route(RouteSettings settings) {
+      switch (settings.name) {
+        case PageConst.checkUser:
+          {
+            return MaterialPageRoute(builder: (_) => CheckUserScreen());
+          }
+        case PageConst.Welcome_Screan:
+          {
+            return MaterialPageRoute(builder: (_) => Welcome_Screan());
+          }
 
-      case PageConst.LoginScrean:
-        {
-          return MaterialPageRoute(builder: (_) => LoginScreen());
-        }
+        case PageConst.LoginScrean:
+          {
+            return MaterialPageRoute(builder: (_) => LoginScreen());
+          }
 
 
 
-      case PageConst.otp_screan:
-        final args = settings.arguments as Map<String, dynamic>;
-        final isFromAddAccount = args['isFromAddAccount'] as bool;
-        final phoneNumber = args['phoneNumber'] ;
+        case PageConst.otp_screan:
+          final args = settings.arguments as Map<String, dynamic>;
+          final isFromAddAccount = args['isFromAddAccount'] as bool;
+          final phoneNumber = args['phoneNumber'] ;
 
-        return routeBuilder(VerifyScreen(
-          isFromAddAccount: isFromAddAccount, phoneNumber: phoneNumber,
-        ));
+          return routeBuilder(VerifyScreen(
+            isFromAddAccount: isFromAddAccount, phoneNumber: phoneNumber,
+          ));
 
       case PageConst.ProfileScreen:
         {

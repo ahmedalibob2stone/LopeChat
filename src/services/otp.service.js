@@ -3,6 +3,8 @@ const redisClient = require('../config/redis');
 const twilioClient = require('../config/twilio');
 const admin = require('../config/firebase');
 const pTimeout = require('p-timeout');
+
+console.log(admin.app().name);
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -13,7 +15,6 @@ exports.sendOtp = async (req, res) => {
   if (!phoneNumber || !phoneNumber.startsWith('+')) {
     return res.status(400).json({ error: 'Invalid phone number format' });
   }
-
   const otp = generateOTP();
   console.log(`Generated OTP: ${otp} for number: ${phoneNumber}`);
 
@@ -21,11 +22,14 @@ exports.sendOtp = async (req, res) => {
     await redisClient.setEx(phoneNumber, 60, otp);
 
 
-    const message = await twilioClient.messages.create({
-      body: `Your verification code is: ${otp}`,
+const message = await twilioClient.messages.create({
+      body: `رمز التحقق الخاص بك: ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phoneNumber,
     });
+
+console.log(message.sid);
+
 
     res.json({
       success: true,
@@ -58,6 +62,7 @@ exports.verifyOtp = async (req, res) => {
     const storedOtp = await redisClient.get(phoneNumber);
 
     if (!storedOtp || storedOtp !== otp) {
+
       await redisClient.setEx(attemptsKey, 300, String(attempts + 1));
       return res.status(401).json({ error: 'Incorrect verification code' });
     }
@@ -69,7 +74,7 @@ exports.verifyOtp = async (req, res) => {
     try {
 userRecord = await pTimeout(
   admin.auth().getUserByPhoneNumber(phoneNumber),
-     5000,
+      15000,
   'Firebase Auth request timed out'
 );    } catch (error) {
       if (error.code === "auth/user-not-found") {
@@ -88,4 +93,3 @@ userRecord = await pTimeout(
     res.status(500).json({ error: 'Failed to create token', details: error.message });
   }
 };
-
