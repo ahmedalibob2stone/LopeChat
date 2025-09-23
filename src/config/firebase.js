@@ -1,9 +1,13 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('../../serviceAccountKey.json');
+const path = require('path');
+// Render يضع Secret كملف عادي، لذلك نقرأه من هذا المسار
+const serviceAccountPath = path.join('/run/secrets', 'SERVICE_ACCOUNTKEY.JSON');
+
+// اقرأ محتوى الملف JSON
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-module.exports = admin;
 //module.exports = { admin, firestore: admin.firestore() };
 
