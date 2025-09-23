@@ -3,7 +3,6 @@ const redisClient = require('../config/redis');
 const twilioClient = require('../config/twilio');
 const admin = require('../config/firebase');
 
-console.log(admin.app().name);
 
 // توليد OTP عشوائي
 function generateOTP() {
