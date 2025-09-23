@@ -1,3 +1,4 @@
+const fs = require('fs');
 const admin = require('firebase-admin');
 const path = require('path');
 // Render يضع Secret كملف عادي، لذلك نقرأه من هذا المسار
