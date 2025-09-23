@@ -51,3 +51,4 @@ serviceAccountKey.json
 # 🔧 CI/CD
 codemagic.yaml.secret
 .firebaserc
+serviceAccountKey.json 
