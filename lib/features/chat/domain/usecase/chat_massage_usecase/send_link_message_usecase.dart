@@ -7,19 +7,20 @@ class SendLinkMessageUseCase {
 
   SendLinkMessageUseCase(this.repository);
 
-  Future<void> call({
+  Future<String> call({
     required String link,
     required String chatId,
     required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
-  }) {
-    return repository.sendLinkMessage(
+  })async {
+    final serverMessageId = await repository.sendLinkMessage(
       link: link,
       chatId: chatId,
       sendUser: sendUser,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
     );
+    return serverMessageId;
   }
 }

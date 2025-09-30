@@ -12,14 +12,7 @@ class SelectStatusScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: Colors.black54,
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-          child: AddInformationStatus(file: file),
-        ),
-      ),
+      body: AddInformationStatus(file: file),
     );
   }
 }

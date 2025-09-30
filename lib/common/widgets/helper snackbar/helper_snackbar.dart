@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class AppSnackbar {
+  /// خطأ
   static void showError(BuildContext context, String message) {
     _showCustomSnackBar(
       context,
@@ -11,6 +12,7 @@ class AppSnackbar {
     );
   }
 
+  /// نجاح
   static void showSuccess(BuildContext context, String message) {
     _showCustomSnackBar(
       context,
@@ -20,6 +22,17 @@ class AppSnackbar {
     );
   }
 
+  /// معلومات
+  static void showInfo(BuildContext context, String message) {
+    _showCustomSnackBar(
+      context,
+      message: message,
+      icon: Icons.info_outline, // أيقونة مناسبة للمعلومات
+      textColor: Colors.black,
+    );
+  }
+
+  /// الدالة الداخلية
   static void _showCustomSnackBar(
       BuildContext context, {
         required String message,
@@ -40,7 +53,7 @@ class AppSnackbar {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05), // شبه شفاف جداً
+                color: Colors.white.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(

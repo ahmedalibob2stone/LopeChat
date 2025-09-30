@@ -48,31 +48,38 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
     required this.sendLinkMessageUseCase,
   }) : super(const SendMessageState());
 
-  Future<void> sendTextMessage({
+  Future<String> sendTextMessage({
     required String text,
     required String reciveUserId,
     required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
-
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-       sendTextMessageUseCase.execute(
+
+      final serverMessageId = await sendTextMessageUseCase.execute(
         text: text,
         chatId: reciveUserId,
         sendUser: sendUser,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
       );
+
       state = state.copyWith(isSending: false, isSuccess: true);
-    } catch (e,st) {
+
+      return serverMessageId; // ✅ إرجاع القيمة
+    } catch (e, st) {
+      state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
       print("❌ VM Error in sendTextMessage: $e");
       print(st);
-      state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
-     // state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
+
+      // هنا نستخدم throw لإعادة رمي الاستثناء بدون استخدام return void
+      throw e;
     }
   }
+
+
   Future<String> sendFileMessage({
     required File file,
     required String chatId,
@@ -103,7 +110,7 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
 
 
 
-  Future<void> sendGIFMessage({
+  Future<String> sendGIFMessage({
     required String gif,
     required String chatId,
     required UserEntity sendUser,
@@ -112,7 +119,7 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-       sendGIFMessageUseCase.execute(
+      final serverMessageId = await  sendGIFMessageUseCase.execute(
         gif: gif,
         chatId: chatId,
         sendUser: sendUser,
@@ -120,11 +127,13 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
         isGroupChat: isGroupChat,
       );
       state = state.copyWith(isSending: false, isSuccess: true);
+      return serverMessageId;
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
+      throw e;
     }
   }
-  Future<void> sendLinkMessage({
+  Future<String> sendLinkMessage({
     required String link,
     required String reciveUserId,
     required UserModel sendUser,
@@ -134,7 +143,7 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
   }) async {
     try {
       state = state.copyWith(isSending: true, error: null, isSuccess: false);
-       sendLinkMessageUseCase.call(
+      final serverMessageId = await sendLinkMessageUseCase.call(
           link: link,
         chatId: reciveUserId,
         sendUser: sendUser.toEntity(),
@@ -142,8 +151,10 @@ class SendMessageViewModel extends StateNotifier<SendMessageState> {
         isGroupChat: isGroupChat,
       );
       state = state.copyWith(isSending: false, isSuccess: true);
+      return serverMessageId;
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString(), isSuccess: false);
+      throw e;
     }
   }
 }

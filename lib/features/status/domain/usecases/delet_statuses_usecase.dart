@@ -6,9 +6,11 @@ class DeleteStatusUseCase {
   DeleteStatusUseCase(this.repository);
 
   Future<bool> call({
+   required String statusId,
     required int index,
     required List<String> photoUrls,
   }) {
-    return repository.deleteStatus(index, photoUrls);
+    return repository.deleteStatusPhoto(statusId,index, photoUrls);
+    //  Future<bool> deleteStatusPhoto(String statusId, int index, List<String> photoUrls)
   }
 }

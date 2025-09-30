@@ -13,6 +13,7 @@ import '../features/chat/presentaion/provider/chat_group/viewmodel/provider.dart
 import '../features/chat/presentaion/screan/contact_list.dart';
 import '../features/status/presentation/screan/status_contacts_screan.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 class MobileScreenLayout extends ConsumerStatefulWidget {
   const MobileScreenLayout({Key? key}) : super(key: key);
 
@@ -25,9 +26,11 @@ final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   var searchName = "";
-  bool isShowUser = false;
+  bool isSearching = false; // حالة البحث
+  bool isShowUser = true;
   late TabController tabController;
   final TextEditingController searchController = TextEditingController();
+  final FocusNode searchFocus = FocusNode();
 
   Set<SelectedChat> selectedChats = {};
 
@@ -37,6 +40,11 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     WidgetsBinding.instance.addObserver(this);
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(_handleTabIndex);
+
+    // لإخفاء البحث عند فقدان التركيز
+    searchFocus.addListener(() {
+
+    });
   }
 
   void clearSearch() {
@@ -53,6 +61,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     tabController.removeListener(_handleTabIndex);
     tabController.dispose();
     searchController.dispose();
+    searchFocus.dispose();
   }
 
   void _handleTabIndex() {
@@ -70,28 +79,18 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
     });
   }
 
-  Future<void> archiveSelected() async {
-    for (var chat in selectedChats) {
-      if (chat.isGroup) {
-        await ref.read(GroupArchivingViewModelProvider.notifier).archiveGroup(chat.id);
-      } else {
-        await ref.read(chatContactViewModelProvider.notifier).archiveChat(chat.id);
-      }
-    }
-    setState(() {
-      selectedChats.clear();
-    });
-    await ref.read(chatContactViewModelProvider.notifier).loadUnarchivedChats();
-
-    await ref.read(GroupArchivingViewModelProvider.notifier).loadUnarchivedGroup();
-  }
 
   void clearSelection() {
     setState(() {
       selectedChats.clear();
     });
   }
-
+  void performSearch(String query) {
+    setState(() {
+      searchName = query;
+      isShowUser = true;
+    });
+  }
   File? TackImage;
   File? pickedImage;
 
@@ -148,242 +147,149 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth > 400) {
-          return Scaffold(
-            key: _scaffoldKey,
-            appBar: AppBar(
-              backgroundColor: kkPrimaryColor,
-              centerTitle: true,
-              automaticallyImplyLeading: false,
-              elevation: 5,
-              title: SizedBox(
-                height: 40,
-                child: TextField(
-                  controller: searchController,
-                  style: TextStyle(color: Colors.grey),
-                  onChanged: (value) {
-                    setState(() {
-                      searchName = value;
-                    });
+        return Scaffold(
+          key: _scaffoldKey,
+          appBar: AppBar(
+            backgroundColor: kkPrimaryColor, // لون بار الخلفية الرئيسي
+            centerTitle: true,
+            automaticallyImplyLeading: false,
+            elevation: 5,
+            leading: isSearching
+                ? IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  isSearching = false;
+                  searchController.clear();
+                  searchName = "";
+                });
+              },
+            )
+                : IconButton(
+              icon: Icon(Icons.menu, color: Colors.white, size: 28),
+              onPressed: () => _scaffoldKey.currentState!.openDrawer(),
+            ),
+            title: isSearching
+                ? SizedBox(
+              height: 40,
+              child:TextField(
+                controller: searchController,
+                focusNode: searchFocus,
+                autofocus: true,
+                style: TextStyle(color: Colors.white),
+                cursorColor: Colors.white,
+                  onChanged:(value) {
+                    performSearch(value);
                   },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    filled: true,
-                    fillColor: Color.fromARGB(255, 39, 39, 39),
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(top: 0.0),
-                      child: IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey),
-                        onPressed: () {
-                          clearSearch();
-                        },
-                      ),
-                    ),
-                  ),
-                  onSubmitted: (String _) {
-                    setState(() {
-                      isShowUser = true;
-                    });
-                  },
-                ),
-              ),
-              leading: GestureDetector(
-                child: Icon(Icons.menu, color: Colors.white38, size: 30),
-                onTap: () {
-                  _scaffoldKey.currentState!.openDrawer();
+                onSubmitted: (value) {
+                  performSearch(value);
+                  FocusScope.of(context).unfocus(); // يخفي الكيبورد لكن يبقي البحث
                 },
-              ),
-              actions: [
-                PopupMenuButton(
-                  color: Colors.grey,
-                  icon: const Icon(Icons.more_vert, color: Colors.grey),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      child: const Text('Create Group'),
-                      onTap: () {
-                        Future(
-                                () => Navigator.of(context)
-                                .pushNamed(PageConst.GroupScrean));
-                      },
-                    )
-                  ],
+
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: TextStyle(color: Colors.white54),
+                  filled: true,
+                  fillColor: Colors.black45,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                  suffixIcon: Icon(Icons.search, color: Colors.white70),
+                    prefixIcon : IconButton(
+                    icon: Icon(Icons.close, color: Colors.white70),
+                    onPressed: () {
+                      setState(() {
+                        isSearching = false;
+                        searchController.clear();
+                        searchName = "";
+                      });
+                    },
+                  ),
                 ),
-              ],
-              bottom: TabBar(
-                controller: tabController,
-                indicatorWeight: 4,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                tabs: const [
-                  Tab(text: 'CHATS'),
-                  Tab(text: 'STATUS'),
-                  Tab(text: 'CALLS'),
+              ),
+            )
+                : Text(
+              "LopeChat",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            actions: [
+              if (!isSearching)
+                IconButton(
+                  icon: Icon(Icons.search, color: Colors.white, size: 28),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = true;
+                    });
+                  },
+                ),
+              PopupMenuButton(
+                color: Colors.grey[800],
+                icon: Icon(Icons.more_vert, color: Colors.white),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    child: Text('Create Group', style: TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Future(() => Navigator.of(context).pushNamed(PageConst.GroupScrean));
+                    },
+                  ),
                 ],
               ),
-            ),
-            body: TabBarView(
+            ],
+            bottom: TabBar(
               controller: tabController,
-              children: [
-                ContactList(
-                  searchName: searchName,
-                  isShowUser: isShowUser,
-                  toggleSelection: toggleSelection,
-                  selectedContacts: selectedChats,
-                ),
-                StatusListScreen(),
-                CallListScreen(isGroupChat: true),
+              indicatorColor: Colors.white,
+              indicatorWeight: 4,
+              unselectedLabelColor: Colors.white70,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: const [
+                Tab(text: 'CHATS'),
+                Tab(text: 'STATUS'),
+                Tab(text: 'CALLS'),
               ],
             ),
-            floatingActionButton: tabController.index == 0
-                ? FloatingActionButton(
-              onPressed: () async {
-                Navigator.of(context)
-                    .pushNamed(PageConst.ContactsScrean);
-              },
-              backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.edit_outlined,
-                  color: Colors.white,
-                  size: MediaQuery.of(context).size.width * 0.07),
-            )
-                : tabController.index == 1
-                ? FloatingActionButton(
-              onPressed: () async {
-                chooseimage();
-              },
-              backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.camera_alt,
-                  color: Colors.white,
-                  size: MediaQuery.of(context).size.width * 0.07),
-            )
-                : Container(),
-          );
-        } else {
-          // نسخة الموبايل والشاشات الصغيرة ✅
-          return Scaffold(
-            key: _scaffoldKey,
-            appBar: AppBar(
-              backgroundColor: kkPrimaryColor,
-              centerTitle: true,
-              automaticallyImplyLeading: false,
-              elevation: 5,
-              title: SizedBox(
-                height: 40,
-                child: TextField(
-                  controller: searchController,
-                  style: TextStyle(color: Colors.grey),
-                  onChanged: (value) {
-                    setState(() {
-                      searchName = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    filled: true,
-                    fillColor: Color.fromARGB(255, 39, 39, 39),
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(top: 0.0),
-                      child: IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey),
-                        onPressed: () {
-                          clearSearch();
-                        },
-                      ),
-                    ),
-                  ),
-                  onSubmitted: (String _) {
-                    setState(() {
-                      isShowUser = true;
-                    });
-                  },
-                ),
+          )
+          ,
+          body: TabBarView(
+            controller: tabController,
+            children: [
+              ContactList(
+                searchName: searchName,
+                isShowUser: isShowUser,
+                toggleSelection: toggleSelection,
+                selectedContacts: selectedChats,
               ),
-              leading: GestureDetector(
-                child: Icon(Icons.menu, color: Colors.white38, size: 30),
-                onTap: () {
-                  _scaffoldKey.currentState!.openDrawer();
-                },
-              ),
-              actions: [
-                PopupMenuButton(
-                  color: Colors.grey,
-                  icon: const Icon(Icons.more_vert, color: Colors.grey),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      child: const Text('Create Group'),
-                      onTap: () {
-                        Future(
-                                () => Navigator.of(context)
-                                .pushNamed(PageConst.GroupScrean));
-                      },
-                    )
-                  ],
-                ),
-              ],
-              bottom: TabBar(
-                controller: tabController,
-                indicatorWeight: 4,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                tabs: const [
-                  Tab(text: 'CHATS'),
-                  Tab(text: 'STATUS'),
-                  Tab(text: 'CALLS'),
-                ],
-              ),
-            ),
-            body: TabBarView(
-              controller: tabController,
-              children: [
-                ContactList(
-                  searchName: searchName,
-                  isShowUser: isShowUser,
-                  toggleSelection: toggleSelection,
-                  selectedContacts: selectedChats,
-                ),
-                StatusListScreen(),
-                CallListScreen(isGroupChat: true),
-              ],
-            ),
-            floatingActionButton: tabController.index == 0
-                ? FloatingActionButton(
-              onPressed: () async {
-                Navigator.of(context)
-                    .pushNamed(PageConst.ContactsScrean);
-              },
-              backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.edit_outlined,
-                  color: Colors.white,
-                  size: MediaQuery.of(context).size.width * 0.07),
-            )
-                : tabController.index == 1
-                ? FloatingActionButton(
-              onPressed: () async {
-                chooseimage();
-              },
-              backgroundColor: kkPrimaryColor,
-              child: Icon(Icons.camera_alt,
-                  color: Colors.white,
-                  size: MediaQuery.of(context).size.width * 0.07),
-            )
-                : Container(),
-          );
-        }
+              StatusListScreen(),
+              CallListScreen(isGroupChat: true),
+            ],
+          ),
+          floatingActionButton: tabController.index == 0
+              ? FloatingActionButton(
+            onPressed: () async {
+              Navigator.of(context).pushNamed(PageConst.ContactsScrean);
+            },
+            backgroundColor: kkPrimaryColor,
+            child: Icon(Icons.edit_outlined,
+                color: Colors.white,
+                size: MediaQuery.of(context).size.width * 0.07),
+          )
+              : tabController.index == 1
+              ? FloatingActionButton(
+            onPressed: () async {
+              chooseimage();
+            },
+            backgroundColor: kkPrimaryColor,
+            child: Icon(Icons.camera_alt,
+                color: Colors.white,
+                size: MediaQuery.of(context).size.width * 0.07),
+          )
+              : Container(),
+        );
       },
     );
   }

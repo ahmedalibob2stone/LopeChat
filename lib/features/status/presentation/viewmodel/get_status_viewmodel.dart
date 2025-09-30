@@ -1,6 +1,6 @@
+import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../domain/entities/status_entity.dart';
 import '../../domain/usecases/get_statuses_usecase.dart';
 
@@ -15,7 +15,6 @@ class StatusListState {
     this.error,
   }) : statuses = statuses ?? [];
 
-  // دالة copyWith لتحديث الحالة بشكل مريح
   StatusListState copyWith({
     bool? isLoading,
     List<StatusEntity>? statuses,
@@ -31,16 +30,24 @@ class StatusListState {
 
 class GetStatusesViewModel extends StateNotifier<StatusListState> {
   final GetStatusesUseCase getUseCase;
+  late final Stream<List<StatusEntity>> _statusStream;
+  late final StreamSubscription<List<StatusEntity>> _subscription;
 
-  GetStatusesViewModel(this.getUseCase) : super(StatusListState());
+  GetStatusesViewModel(this.getUseCase) : super(StatusListState()) {
+    _statusStream = getUseCase(); // استدعاء الدالة Stream من UseCase
+    _subscription = _statusStream.listen(
+          (statuses) {
+        state = state.copyWith(isLoading: false, statuses: statuses, error: null);
+      },
+      onError: (e) {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      },
+    );
+  }
 
-  Future<void> loadStatuses() async {
-    try {
-      state = state.copyWith(isLoading: true, error: null);
-      final statuses = await getUseCase();
-      state = state.copyWith(isLoading: false, statuses: statuses, error: null);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }

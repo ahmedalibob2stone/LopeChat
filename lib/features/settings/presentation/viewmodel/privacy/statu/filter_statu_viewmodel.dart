@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:lopechat/features/settings/presentation/viewmodel/privacy/statu/status_privacy_viewmodel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,19 +27,33 @@ class FilterStatuViewmodel extends StateNotifier<StatusState> {
   final Ref ref;
   final StatusPrivacyState privacyState;
   final GetStatusesUseCase getStatusesUseCase;
+  bool _isDisposed = false; // <-- علمنا إذا تم dispose
   List<StatusEntity> allStatuses = [];
-        FilterStatuViewmodel(this.ref, this.privacyState,this.getStatusesUseCase) : super(StatusState.loading()) {
-    _loadStatuses();
+  late final StreamSubscription<List<StatusEntity>> _subscription;
+
+  FilterStatuViewmodel(this.ref, this.privacyState, this.getStatusesUseCase)
+      : super(StatusState.loading()) {
+    Future.microtask(() => _loadStatuses());
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   Future<void> _loadStatuses() async {
-    try {
-      state = StatusState.loading();
-      allStatuses = await getStatusesUseCase();
-      state = StatusState.data(allStatuses);
-    } catch (e) {
-      state = StatusState.error(e.toString());
-    }
+    _subscription = getStatusesUseCase().listen(
+          (statuses) {
+        if (_isDisposed) return;
+        allStatuses = statuses;
+        state = StatusState.data(allStatuses);
+      },
+      onError: (e) {
+        if (_isDisposed) return;
+        state = StatusState.error(e.toString());
+      },
+    );
   }
 
   List<StatusEntity> filterStatusesWithPrivacy({
@@ -57,5 +73,4 @@ class FilterStatuViewmodel extends StateNotifier<StatusState> {
       }
     }).toList();
   }
-
 }

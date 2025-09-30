@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/repositories/status_repository_impl.dart';
-import '../upload_status_usecase.dart';
+import '../../../domain/usecases/upload_status_usecase.dart';
+import '../data/provider.dart';
 
 final uploadStatusUseCaseProvider = Provider<UploadStatusUseCase>((ref) {
   final repo = ref.read(statusRepositoryImplProvider);

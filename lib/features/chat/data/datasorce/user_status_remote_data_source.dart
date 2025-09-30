@@ -16,14 +16,15 @@ class UserStatusRemoteDataSource {
 
     if (isOnline) {
       await userDoc.update({
-        'isOnline': 'online',
+        'isOnline': true,
       });
     } else {
       await userDoc.update({
-        'isOnline': 'offline',
+        'isOnline': false,
         'lastSeen': DateTime.now().toIso8601String(),
       });
     }
+
   }
 
   Future<String> getUserLastSeen(String userId) async {
@@ -32,9 +33,10 @@ class UserStatusRemoteDataSource {
     return doc.data()?['lastSeen'] ?? '';
   }
 
-  Future<String> getUserOnlineStatus(String userId) async {
+  Future<bool> getUserOnlineStatus(String userId) async {
     final doc = await firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return 'offline';
-    return doc.data()?['isOnline'] ?? 'offline';
+    if (!doc.exists) return false;
+    return doc.data()?['isOnline'] ?? false;
   }
+
 }

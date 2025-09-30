@@ -19,47 +19,30 @@ class ChatMessageRemoteDataSource {
   ChatMessageRemoteDataSource({required this.fire, required this.auth, required this.storage});
 
   //==================== إرسال الرسائل النصية ====================//
-  Future<void> sendTextMessage({
+  Future<String> sendTextMessage({
     required String text,
     required String reciveUserId,
     required UserModel sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
+    final messageId = const Uuid().v1();
+    final time = DateTime.now();
+
+    UserModel? reciveUserData;
+
     try {
-
-      final messageId = const Uuid().v1();
-      final time = DateTime.now();
-
-      UserModel? reciveUserData;
       if (!isGroupChat) {
         final userdata = await fire.collection('users').doc(reciveUserId).get();
 
-        // ✅ ضع الكود للتحقق هنا
-        print("📄 المستند من Firestore: ${userdata.data()}");
-
-        if (userdata.exists) {
-          final data = userdata.data();
-          if (data != null) {
-            reciveUserData = UserModel.fromMap(data);
-            print("✅ تم إنشاء UserModel بنجاح: ${reciveUserData.name}");
-          } else {
-            print("⚠️ المستند موجود لكن البيانات فارغة!");
-            return; // تمنع الإرسال إذا البيانات فارغة
-          }
-        } else {
-          print("⚠️ المستند غير موجود على الإطلاق!");
-          return; // تمنع الإرسال إذا المستند غير موجود
+        if (userdata.exists && userdata.data() != null) {
+          reciveUserData = UserModel.fromMap(userdata.data()!);
         }
 
-        // 🔹 حالة إرسال رسالة لنفسك
         if (reciveUserId == sendUser.uid) {
-          reciveUserData = sendUser; // استخدم بياناتك مباشرة
-          print("🟢 إرسال رسالة لنفسك، استخدم بيانات المستخدم الحالي مباشرة");
+          reciveUserData = sendUser;
         }
       }
-
-
 
       await _saveDatatoContact(
         senderUserData: sendUser,
@@ -84,13 +67,13 @@ class ChatMessageRemoteDataSource {
         ReciveUserName: reciveUserData?.name,
         isGroupChat: isGroupChat,
       );
-    } catch (e,st) {
+
+      return messageId;
+    } catch (e, st) {
       print("❌ Error in sendTextMessage: $e");
       print(st);
+      rethrow; // ✅ إعادة طرح الاستثناء بدلاً من إنهاء الدالة بدون قيمة
     }
-    await Future.wait([
-
-    ]);
   }
 
   //==================== إرسال الملفات (صور، فيديو، صوت...) ====================//
@@ -163,7 +146,7 @@ class ChatMessageRemoteDataSource {
 
 
   //==================== إرسال GIF ====================//
-  Future<void> sendGIFMessage({
+  Future<String> sendGIFMessage({
     required String gif,
     required String reciveUserId,
     required UserModel sendUser,
@@ -182,7 +165,6 @@ class ChatMessageRemoteDataSource {
         } else {
           print("⚠️ المستقبل غير موجود في users: $reciveUserId");
           // ممكن ترجع أو تكمل بدون futureUserData
-          return;
         }
         if (reciveUserId == sendUser.uid) {
           reciveUserData = sendUser; // استخدم بياناتك مباشرة
@@ -214,9 +196,12 @@ class ChatMessageRemoteDataSource {
         ReciveUserName: reciveUserData?.name,
         isGroupChat: isGroupChat,
       );
+      return messageId;
     } catch (e,st) {
       print("❌ Error in sendGIFMessage: $e");
       print(st);
+
+      rethrow; // ✅ إعادة طرح الاستثناء بدلاً من إنهاء الدالة بدون قيمة
     }
   }
 
@@ -263,12 +248,12 @@ class ChatMessageRemoteDataSource {
           prof: senderUserData.profile,
           contactId: senderUserData.uid,
           time: time,
-          isOnline: senderUserData.isOnline,
+
           unreadMessageCount: unreadMessageCount,
           isSeen: false,
           lastMessage: text,
           receiverId: reciverUserData.uid,
-          isArchived: false,
+          isArchived: false, isOnline: senderUserData.isOnline,
         );
 
         final sender = ChatContactModel(
@@ -440,7 +425,7 @@ class ChatMessageRemoteDataSource {
       print('Error in markMessagesAsSeen: $e');
     }
   }
-  Future<void> sendLinkMessage({
+  Future<String> sendLinkMessage({
     required String link,
     required String reciveUserId,
     required UserModel sendUser,
@@ -459,7 +444,7 @@ class ChatMessageRemoteDataSource {
         } else {
           print("⚠️ المستقبل غير موجود في users: $reciveUserId");
           // ممكن ترجع أو تكمل بدون futureUserData
-          return;
+
         }
         if (reciveUserId == sendUser.uid) {
           reciveUserData = sendUser; // استخدم بياناتك مباشرة
@@ -491,9 +476,11 @@ class ChatMessageRemoteDataSource {
         ReciveUserName: reciveUserData?.name,
         isGroupChat: isGroupChat,
       );
+      return messageId;
     } catch (e,st) {
       print("❌ Error in sendLinkMessage: $e");
       print(st);
+      rethrow;
     }
   }
 

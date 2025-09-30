@@ -12,4 +12,5 @@ abstract class ChatContactRepository {
   Future<void> deleteChat({
     required String receiverId,
   }) async{}
+  Stream<List<ChatContactEntity>> getChatContacts({required String userId});
 }

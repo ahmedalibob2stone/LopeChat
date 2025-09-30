@@ -1,12 +1,12 @@
-import '../entities/status_entity.dart';
-import '../repositories/status_repository.dart';
+  import '../entities/status_entity.dart';
+  import '../repositories/status_repository.dart';
 
-class GetStatusesUseCase {
-  final IStatusRepository repository;
+  class GetStatusesUseCase {
+    final IStatusRepository repository;
 
-  GetStatusesUseCase(this.repository);
+    GetStatusesUseCase(this.repository);
 
-  Future<List<StatusEntity>> call() {
-    return repository.getStatuses();
+    Stream<List<StatusEntity>>call() {
+      return repository.getStatusStream();
+    }
   }
-}

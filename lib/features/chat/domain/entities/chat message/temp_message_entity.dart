@@ -16,7 +16,15 @@ class TempMessageWrapper implements BaseMessage{
   }
 
   @override
-  String get text => temp.file != null ? temp.file!.path.split('/').last : "";
+  String get text {
+    if (temp.type == EnumData.text) {
+      return temp.text ?? ""; // النص الحقيقي للرسالة
+    } else if (temp.file != null) {
+      return temp.file!.path.split('/').last; // اسم الملف
+    }
+    return "";
+  }
+
 
   @override
   DateTime get time => temp.time;
@@ -28,7 +36,7 @@ class TempMessageWrapper implements BaseMessage{
   EnumData get type => temp.type;
 
   @override
-  bool get isSeen => temp.isSentToServer;
+  bool get isSeen => false;
 
   // أعطي قيم افتراضية لتوافق الـ interface
   @override
@@ -47,5 +55,6 @@ class TempMessageWrapper implements BaseMessage{
   String get proff => "";
 
   @override
-  String get messageId => temp.id;
+  String get messageId => temp.serverMessageId ?? temp.id;
+
 }

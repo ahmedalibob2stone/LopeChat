@@ -147,27 +147,7 @@ class OnGenerateRoutes{
           return routeBuilder(
               SelectStatusScreen(file: photofromgallery,));
         }
-      case PageConst.StatusScrean:
-        final arguments = settings.arguments as Map<String, dynamic>;
-        final username = arguments['username'] ?? 'Unknown';
-        final profilePic = arguments['profilePic'] ?? 'default_profile_pic_url';
-        final phoneNumber = arguments['phoneNumber'] ?? 'Unknown';
-        final PhotoUrl = arguments['PhotoUrl'] ?? 'default_photo_url';
-        final massage = arguments['PhotoUrl'] ?? 'default_photo_url';
-        final uid = arguments['uid'] ?? 'Unknown';
 
-
-         {
-          return routeBuilder(
-              StatusScreen(username: username,
-                profilePic: profilePic,
-                phoneNumber: phoneNumber,
-                photoUrls: PhotoUrl,
-                massage: massage,
-                uid: uid,
-
-              ));
-        }
       case PageConst.GroupScrean:
         {
           return routeBuilder(

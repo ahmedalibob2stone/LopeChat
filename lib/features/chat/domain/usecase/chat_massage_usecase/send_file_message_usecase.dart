@@ -17,6 +17,7 @@ class SendFileMessageUseCase {
     required EnumData massageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
+
   }) async {
     return await repository.sendFileMessage(
       file: file,
@@ -25,6 +26,7 @@ class SendFileMessageUseCase {
       massageEnum: massageEnum,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
+
     );
   }
 }

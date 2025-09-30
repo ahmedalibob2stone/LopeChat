@@ -48,30 +48,30 @@ import '../../../contact/presentation/provider/stream/gat_app_contact_stream_pro
       super.initState();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return; // ✅ تأكد أن الصفحة لسه شغالة
+        if (!mounted) return; // ✅ حماية من dispose
 
         await userStatusVM.updateStatus(true);
 
-        final currentUser = ref
-            .read(currentUserStreamProvider)
-            .value;
+        final currentUser = ref.read(currentUserStreamProvider).value;
 
         if (currentUser != null && currentUser.uid != widget.uid) {
           await userStatusVM.loadLastSeen(widget.uid);
           await userStatusVM.loadOnlineStatus(widget.uid);
 
           final contacts = await ref.read(someProvider(widget.uid)).call();
+
+          if (!mounted) return; // ✅ حماية إضافية
           await ref.read(
-              lastSeenAndOnlineViewModelProvidering(widget.uid).notifier)
-              .loadDataForUser(widget.uid, contacts);
+              lastSeenAndOnlineViewModelProvidering(widget.uid).notifier
+          ).loadDataForUser(widget.uid, contacts);
         }
 
+        if (!mounted) return; // ✅ حماية قبل استدعاء التالي
         await ref
             .read(getAppContactsViewModelProvider.notifier)
             .loadAppContacts();
-        final contacts = ref
-            .read(getAppContactsViewModelProvider)
-            .contacts;
+        if (!mounted) return;
+        final contacts = ref.read(getAppContactsViewModelProvider).contacts;
         await ref.read(profilePrivacyProvider.notifier).loadData(contacts);
       });
     }
@@ -262,7 +262,6 @@ import '../../../contact/presentation/provider/stream/gat_app_contact_stream_pro
         ipProtectionEnabled: ipProtectionEnabled,
         scaffold: Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.blue,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),

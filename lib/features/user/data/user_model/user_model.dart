@@ -7,7 +7,7 @@ class   UserModel extends UserEntity {
     required String name,
     required String uid,
     required String profile,
-    required String isOnline,
+    required bool isOnline,
     required String lastSeen,
     required String phoneNumber,
     required List<String> groupId,
@@ -52,14 +52,14 @@ class   UserModel extends UserEntity {
     );
   }
 
-  factory UserModel.empty() => UserModel(uid: '', name: 'Guest', profile: '', isOnline: '', lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
+  factory UserModel.empty() => UserModel(uid: '', name: 'Guest', profile: '', isOnline: false, lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       name: map['name'] ?? '',
       uid: map['uid'] ?? '',
       profile: map['profile'] ?? '',
-      isOnline: map['isOnline'] ?? '',
+      isOnline: map['isOnline'] ?? false,
       lastSeen: map['lastSeen'] ?? '',
       phoneNumber: map['phoneNumber'] ?? '',
       groupId: map['groupId'] != null ? List<String>.from(map['groupId']) : [],

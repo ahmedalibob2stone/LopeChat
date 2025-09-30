@@ -5,7 +5,7 @@ class GetUserOnlineStatusUseCase {
 
   GetUserOnlineStatusUseCase(this.repository);
 
-  Future<String> call(String userId) {
+  Future<bool> call(String userId) {
     return repository.getUserOnlineStatus(userId);
   }
 }

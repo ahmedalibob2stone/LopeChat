@@ -10,6 +10,8 @@ class StatusEntity {
   final Timestamp createdAt;
   final String statusId;
   final List<String> whoCanSee;
+  final Map<String, List<String>> seenBy; // جديد
+
 
   StatusEntity({
     required this.uid,
@@ -21,5 +23,6 @@ class StatusEntity {
     required this.createdAt,
     required this.statusId,
     required this.whoCanSee,
+    required this.seenBy,
   });
 }

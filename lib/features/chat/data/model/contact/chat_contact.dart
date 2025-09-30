@@ -11,7 +11,7 @@ class ChatContactModel  extends ChatContactEntity   {
     required String contactId,
     required DateTime time,
     required String lastMessage,
-    required String isOnline,
+    required bool isOnline,
     required int unreadMessageCount,
     required String receiverId,
     required bool isSeen,
@@ -39,10 +39,10 @@ class ChatContactModel  extends ChatContactEntity   {
       prof: map['prof'] ?? '',
       contactId: map['contactId'] ?? '',
       time: DateTime.fromMillisecondsSinceEpoch(map['time'] ?? 0),
-      lastMessage: map['lastMassge'] ?? '', // original typo: lastMassge
+      lastMessage: map['lastMessage'] ?? '', // original typo: lastMassge
       isOnline: map['isOnline'] ?? '',
       unreadMessageCount: map['unreadMessageCount'] ?? 0,
-      receiverId: map['reciverId'] ?? '',
+      receiverId: map['receiverId'] ?? '',
       isSeen: map['isSeen'] ?? false,
       isArchived: map['isArchived'] ?? false,
 
@@ -56,10 +56,10 @@ class ChatContactModel  extends ChatContactEntity   {
       'prof': prof,
       'contactId': contactId,
       'time': time.millisecondsSinceEpoch,
-      'lastMassge': lastMessage,
+      'lastMessage': lastMessage,
       'isOnline': isOnline,
       'unreadMessageCount': unreadMessageCount,
-      'reciverId': receiverId,
+      'receiverId': receiverId,
       'isSeen': isSeen,
       'isArchived':isArchived,
 

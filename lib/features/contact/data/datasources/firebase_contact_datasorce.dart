@@ -329,7 +329,7 @@ class FirebaseContactDataSource {
           phoneNumber: phoneNumber,
           uid: '',
           profile: '',
-          isOnline: 'false',
+          isOnline: false,
           groupId: [],
           statu: '',
           lastSeen: '',

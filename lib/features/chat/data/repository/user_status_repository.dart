@@ -18,7 +18,7 @@
     }
 
     @override
-    Future<String> getUserOnlineStatus(String userId) {
+    Future<bool> getUserOnlineStatus(String userId)  {
       return remoteDataSource.getUserOnlineStatus(userId);
     }
   }

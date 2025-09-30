@@ -4,7 +4,7 @@ class ChatContactEntity {
   final String contactId;
   final DateTime time;
   final String lastMessage;
-  final String isOnline;
+  final bool isOnline;
   final int unreadMessageCount;
   final String receiverId;
   final bool isSeen;

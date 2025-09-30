@@ -1,6 +1,7 @@
 
 
 
+import '../../domain/entities/contact_entities.dart';
 import '../../domain/repository/chat_contact_repository.dart';
 import '../datasorce/chat_contact_remote_datasource.dart';
 import '../model/contact/chat_contact.dart';
@@ -11,7 +12,24 @@ class ChatContactRepositoryImpl implements ChatContactRepository {
   ChatContactRepositoryImpl({
     required this.remoteDataSource,
   });
-
+  @override
+  Stream<List<ChatContactEntity>> getChatContacts({required String userId}) {
+    return remoteDataSource.getDateChatContacts(userId: userId)
+        .map((chatModels) =>
+        chatModels.map<ChatContactEntity>((model) => ChatContactEntity(
+          name: model.name,
+          prof: model.prof,
+          contactId: model.contactId,
+          time: model.time,
+          lastMessage: model.lastMessage,
+          isOnline: model.isOnline,
+          unreadMessageCount: model.unreadMessageCount,
+          receiverId: model.receiverId,
+          isSeen: model.isSeen,
+          isArchived: model.isArchived,
+        )).toList()
+    );
+  }
 
   @override
   Stream<List<ChatContactModel>> searchContact({required String searchName}) {

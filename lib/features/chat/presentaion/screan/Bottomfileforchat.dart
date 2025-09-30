@@ -18,8 +18,7 @@ import '../../../../constant.dart';
 import '../../../profile/presentation/provider/block/vm/viewmodel_provider.dart';
 import '../../../user/presentation/provider/user_provider.dart';
 import '../../domain/entities/chat message/local_blocked_massage.dart';
-import '../../domain/entities/chat message/message_entity.dart';
-import '../provider/chat_massage/viewmodel/chat_stream_provider.dart';
+
 import '../provider/chat_massage/viewmodel/local_blocked_messages_view_model_provider.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
 import '../provider/chat_massage/viewmodel/temp_messages_view_model.dart';
@@ -107,73 +106,134 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     });
   }
 
-  void sendTextMessage() async {
+  Future<void> sendTextMessage() async {
+    // خزن النص في متغير مؤقت قبل مسحه
+    final textToSend = _message.text.trim();
+
     final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
     if (currentUser == null) {
       print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
       return;
     }
 
+    final messageReply = ref.read(messageReplyProvider);
 
-        final messageReply = ref.read(messageReplyProvider);
+    if (textToSend.isEmpty) {
+      print("⚠️ UI → محاولة إرسال رسالة فارغة");
+      return;
+    }
 
-        if (_message.text.trim().isEmpty) {
-          print("⚠️ UI → محاولة إرسال رسالة فارغة");
+    final url = _extractFirstUrl(textToSend);
+    if (url != null) {
+      // إذا الرسالة تحتوي على رابط، أرسلها كرسالة رابط
+      sendLinkMessage(url);
+      return;
+    }
+
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final serverMessageId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
+
+    // إنشاء رسالة مؤقتة
+    ref.read(tempMessageProvider.notifier).addTempMessage(
+      TempMessage(
+        id: tempId,
+        type: EnumData.text,
+        time: DateTime.now(),
+        serverMessageId: serverMessageId,
+        isSentToServer: false,
+        isUploaded: true, // لأنها نصية لا تحتاج رفع ملف
+        progress: 1.0,
+        text: textToSend, link: "", gifUrl: '',
+      ),
+    );
+
+    // مسح النص من الكيبورد بعد إنشاء المؤقتة
+    _message.clear();
+
+    print("🔍 UI → التحقق من إمكانية الإرسال إلى ${widget.chatId} ...");
+
+    // التحقق من إمكانية الإرسال
+    final result = await ref.read(blockUserViewModelProvider.notifier)
+        .canSendMessage(currentUserId: currentUser.uid, receiverUserId: widget.chatId);
+
+    await result.fold(
+          (errorMsg) {
+        // ممنوع الإرسال: حذف المؤقتة وإضافة رسالة محلية
+        print("⛔️ UI → لا يمكن إرسال الرسالة: $errorMsg");
+
+        _addLocalBlockedMessage(
+          text: textToSend,
+          type: EnumData.text,
+          senderId: currentUser.uid,
+          repliedText: messageReply?.message,
+          repliedMessageType: messageReply?.messageDate,
+        );
+
+        ref.read(messageReplyProvider.notifier).state = null;
+        ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
+      },
+          (canSend) async {
+        if (!canSend) {
+          // لم يُسمح بالإرسال لأي سبب آخر
+          _addLocalBlockedMessage(
+            text: textToSend,
+            type: EnumData.text,
+            senderId: currentUser.uid,
+            repliedText: messageReply?.message,
+            repliedMessageType: messageReply?.messageDate,
+          );
+          ref.read(messageReplyProvider.notifier).state = null;
+          ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
           return;
         }
 
-        final url = _extractFirstUrl(_message.text.trim());
+        try {
+          print("✅ UI → مسموح بالإرسال. سيتم استدعاء VM");
 
-        if (url != null) {
-          sendLinkMessage(url);
-          return;
+          // استدعاء ViewModel لإرسال الرسالة الحقيقية
+          final sentServerMessageId = await ref.read(sendMessageViewModelProvider.notifier)
+              .sendTextMessage(
+            text: textToSend,
+            reciveUserId: widget.chatId,
+            sendUser: currentUser,
+            messageReply: messageReply,
+            isGroupChat: widget.isGroupChat,
+          );
+
+          print("📩 UI → تم إرسال الرسالة: $textToSend إلى ${widget.chatId}");
+
+          // تحديث الرسالة المؤقتة بعد وصولها للسيرفر
+          ref.read(tempMessageProvider.notifier).markAsSent(tempId, sentServerMessageId);
+
+          ref.read(messageReplyProvider.notifier).state = null;
+
+          // تمرير التمرير إلى الأسفل
+          ref.read(scrollToBottomProvider.notifier).state = true;
+        } catch (e, st) {
+          print("❌ Error sending text message: $e");
+          print(st);
+
+          // إزالة الرسالة المؤقتة عند الفشل
+          ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
         }
-
-        print("🔍 UI → التحقق من إمكانية الإرسال إلى ${widget.chatId} ...");
-
-        final result = await ref.read(blockUserViewModelProvider.notifier)
-            .canSendMessage(
-          currentUserId: currentUser.uid,
-          receiverUserId: widget.chatId,
-        );
-
-        result.fold(
-              (errorMsg) {
-            print("⛔️ UI → لا يمكن إرسال الرسالة: $errorMsg");
-
-            _addLocalBlockedMessage(
-              text: _message.text.trim(),
-              type: EnumData.text,
-              senderId: currentUser.uid,
-              repliedText: messageReply?.message,
-              repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
-            );
-
-            _message.clear();
-            ref.read(messageReplyProvider.notifier).state = null;
-          },
-              (canSend) {
-            print("✅ UI → مسموح بالإرسال. سيتم استدعاء VM");
-
-            ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
-              text: _message.text.trim(),
-              sendUser: currentUser,
-              messageReply: messageReply,
-              isGroupChat: widget.isGroupChat,
-              reciveUserId: widget.chatId,
-            );
-
-            print("📩 UI → محاولة إرسال رسالة: ${_message.text.trim()} إلى ${widget.chatId}");
-
-            _message.clear();
-            ref.read(messageReplyProvider.notifier).state = null;
-            ref.read(scrollToBottomProvider.notifier).state = true;
-          },
-        );
-
-
+      },
+    );
   }
 
+
+
+
+  Future<String> uploadFile(File file, Function(double) onProgress) async {
+    // مثال على رفع ملف وهمي مع تحديث progress
+    const totalChunks = 100;
+    for (int i = 1; i <= totalChunks; i++) {
+      await Future.delayed(const Duration(milliseconds: 20));
+      onProgress(i / totalChunks); // تحديث التقدم
+    }
+
+    // بعد انتهاء الرفع، أرجع رابط الملف النهائي
+    return file.path; // هنا يجب أن ترجع URL الملف من Storage فعلي
+  }
   Future<void> sendFileMessage(File file, EnumData type) async {
     final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
     if (currentUser == null) return;
@@ -181,18 +241,22 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     final messageReply = ref.read(messageReplyProvider);
 
     final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final serverMessageId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
 
-    // إضافة الرسالة المؤقتة للواجهة
+    // إنشاء رسالة مؤقتة
     ref.read(tempMessageProvider.notifier).addTempMessage(
       TempMessage(
         id: tempId,
         file: file,
         type: type,
         time: DateTime.now(),
+        serverMessageId: serverMessageId,
+        progress: 0.0,        // نسبة رفع الملف تبدأ من 0
+        isUploaded: false,    // الملف لم يُرفع بعد
+        isSentToServer: false, text: '', link: '', gifUrl: '',
       ),
     );
 
-    // التحقق من إمكانية إرسال الرسالة
     final result = await ref.read(blockUserViewModelProvider.notifier)
         .canSendMessage(
       currentUserId: currentUser.uid,
@@ -216,15 +280,17 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
           (canSend) async {
         try {
           // رفع الملف مع تحديث نسبة التقدم
+          // بعد رفع الملف
           final uploadedUrl = await uploadFile(file, (progress) {
             ref.read(tempMessageProvider.notifier).updateProgress(tempId, progress);
           });
-
-          // تم رفع الملف بالكامل
           ref.read(tempMessageProvider.notifier).markUploadComplete(tempId);
 
+// لا تستبدل الملف بعد الرفع!
+// ref.read(tempMessageProvider.notifier).updateFile(tempId, uploadedUrl: uploadedUrl);
+
           // إرسال الرسالة إلى Firestore
-          final serverMessageId = await ref.read(sendMessageViewModelProvider.notifier)
+          final sentServerMessageId = await ref.read(sendMessageViewModelProvider.notifier)
               .sendFileMessage(
             file: File(uploadedUrl),
             chatId: widget.chatId,
@@ -234,76 +300,19 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
             isGroupChat: widget.isGroupChat,
           );
 
-          // تحديث TempMessage بأنه تم الإرسال
-          ref.read(tempMessageProvider.notifier).markAsSent(tempId, serverMessageId);
-
-          // استبدال المؤقتة بالرسالة النهائية من السيرفر
-          ref.read(tempMessageProvider.notifier).replaceWithServerMessage(serverMessageId);
+          // وضع الـ serverMessageId النهائي في نفس الرسالة
+          ref.read(tempMessageProvider.notifier).markAsSent(tempId, sentServerMessageId);
 
           ref.read(scrollToBottomProvider.notifier).state = true;
           ref.read(messageReplyProvider.notifier).state = null;
+
         } catch (e) {
-          // في حال فشل الإرسال
+          // فشل الإرسال
           ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
           print("❌ Error sending file message: $e");
         }
       },
     );
-  }
-
-
-  void sendLinkMessage(String url) async {
-    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
-    if (currentUser == null) {
-      print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
-      return;
-    }
-
-
-    final messageReply = ref.read(messageReplyProvider);
-
-    final result = await ref.read(blockUserViewModelProvider.notifier)
-        .canSendMessage(
-      currentUserId: currentUser.uid,
-      receiverUserId: widget.chatId,
-    );
-
-    result.fold(
-          (errorMsg) {
-        _addLocalBlockedMessage(
-          text: url,
-          type: EnumData.link,
-          senderId: currentUser.uid,
-          repliedText: messageReply?.message,
-          repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
-        );
-        _message.clear();
-        ref.read(messageReplyProvider.notifier).state = null;
-      },
-          (canSend) {
-        ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
-          text: url,
-          sendUser: currentUser,
-          messageReply: messageReply,
-          isGroupChat: widget.isGroupChat, reciveUserId: widget.chatId,
-        );
-        _message.clear();
-        ref.read(messageReplyProvider.notifier).state = null;
-        ref.read(scrollToBottomProvider.notifier).state = true;
-      },
-    );
-  }
-
-  Future<String> uploadFile(File file, Function(double) onProgress) async {
-    // مثال على رفع ملف وهمي مع تحديث progress
-    const totalChunks = 100;
-    for (int i = 1; i <= totalChunks; i++) {
-      await Future.delayed(const Duration(milliseconds: 20));
-      onProgress(i / totalChunks); // تحديث التقدم
-    }
-
-    // بعد انتهاء الرفع، أرجع رابط الملف النهائي
-    return file.path; // هنا يجب أن ترجع URL الملف من Storage فعلي
   }
 
   Future<void> selectGIF() async {
@@ -319,6 +328,20 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     if (gifUrl == null || gifUrl.isEmpty) return;
 
     final messageReply = ref.read(messageReplyProvider);
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final serverMessageId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
+
+    ref.read(tempMessageProvider.notifier).addTempMessage(
+      TempMessage(
+        id: tempId,
+        type: EnumData.gif,
+        time: DateTime.now(),
+        serverMessageId: serverMessageId,
+        progress: 0.0,        // نسبة رفع الملف تبدأ من 0
+        isUploaded: false,    // الملف لم يُرفع بعد
+        isSentToServer: false, text: '', link: '', gifUrl: gifUrl,
+      ),
+    );
 
     final result = await ref.read(blockUserViewModelProvider.notifier)
         .canSendMessage(
@@ -337,16 +360,89 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
         );
         ref.read(messageReplyProvider.notifier).state = null;
       },
-          (canSend) {
-        ref.read(sendMessageViewModelProvider.notifier).sendGIFMessage(
-          gif: gifUrl,
-          chatId: widget.chatId,
-          sendUser: currentUser,
-          messageReply: messageReply,
-          isGroupChat: widget.isGroupChat,
+          (canSend)async {
+            try{
+              ref.read(tempMessageProvider.notifier).markUploadComplete(tempId);
+
+              final sentServerMessageId = await  ref.read(sendMessageViewModelProvider.notifier).sendGIFMessage(
+                gif: gifUrl,
+                chatId: widget.chatId,
+                sendUser: currentUser,
+                messageReply: messageReply,
+                isGroupChat: widget.isGroupChat,
+              );
+              ref.read(tempMessageProvider.notifier).markAsSent(tempId, sentServerMessageId);
+
+              ref.read(scrollToBottomProvider.notifier).state = true;
+              ref.read(messageReplyProvider.notifier).state = null;
+            }catch(e){
+              ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
+              print("❌ Error sending file message: $e");
+            }
+
+
+      },
+    );
+  }
+  void sendLinkMessage(String url) async {
+    final currentUser = ref.read(cachedCurrentUserProvider.notifier).state;
+    if (currentUser == null) {
+      print("⛔️ UI → بيانات المستخدم الحالي غير موجودة، لا يمكن إرسال الرسالة");
+      return;
+    }
+
+    final messageReply = ref.read(messageReplyProvider);
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final serverMessageId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
+    ref.read(tempMessageProvider.notifier).addTempMessage(
+      TempMessage(
+        id: tempId,
+        type: EnumData.gif,
+        time: DateTime.now(),
+        serverMessageId: serverMessageId,
+        progress: 0.0,        // نسبة رفع الملف تبدأ من 0
+        isUploaded: false,    // الملف لم يُرفع بعد
+        isSentToServer: false, text: '', link: url, gifUrl: "",
+      ),
+    );
+    final result = await ref.read(blockUserViewModelProvider.notifier)
+        .canSendMessage(
+      currentUserId: currentUser.uid,
+      receiverUserId: widget.chatId,
+    );
+
+    result.fold(
+          (errorMsg) {
+        _addLocalBlockedMessage(
+          text: url,
+          type: EnumData.link,
+          senderId: currentUser.uid,
+          repliedText: messageReply?.message,
+          repliedMessageType: messageReply?.messageDate, // ✅ تأكد أن هذا من نوع EnumData
         );
-        ref.read(scrollToBottomProvider.notifier).state = true;
+        _message.clear();
         ref.read(messageReplyProvider.notifier).state = null;
+      },
+          (canSend)async {
+            try{
+              ref.read(tempMessageProvider.notifier).markUploadComplete(tempId);
+
+              final sentServerMessageId= await ref.read(sendMessageViewModelProvider.notifier).sendTextMessage(
+                text: url,
+                sendUser: currentUser,
+                messageReply: messageReply,
+                isGroupChat: widget.isGroupChat, reciveUserId: widget.chatId,
+              );
+              ref.read(tempMessageProvider.notifier).markAsSent(tempId, sentServerMessageId);
+
+              _message.clear();
+              ref.read(messageReplyProvider.notifier).state = null;
+              ref.read(scrollToBottomProvider.notifier).state = true;
+            }catch(e){
+              ref.read(tempMessageProvider.notifier).removeTempMessage(tempId);
+              print("❌ Error sending file message: $e");
+            }
+
       },
     );
   }
@@ -440,18 +536,7 @@ class _BottomFileforChatState extends ConsumerState<BottomFileforChat> {
     final messageState = ref.watch(messageViewModelProvider);
     final messageReply = ref.watch(messageReplyProvider);
     final isShowMessageReply = messageReply != null;
-    ref.listen<AsyncValue<List<MessageEntity>>>(
-      chatMessagesProvider(widget.chatId),
-          (prev, next) {
-        next.whenData((messages) {
-          for (var msg in messages) {
-            ref.read(tempMessageProvider.notifier).replaceWithServerMessage(
-              msg.messageId ?? '',
-            );
-          }
-        });
-      },
-    );
+
 
 
 

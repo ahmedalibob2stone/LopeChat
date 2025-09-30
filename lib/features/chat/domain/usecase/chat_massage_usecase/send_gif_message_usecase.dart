@@ -9,19 +9,20 @@ class SendGifMessageUseCase {
 
   SendGifMessageUseCase(this.repository);
 
-  Future<void> execute({
+  Future<String> execute({
     required String gif,
     required String chatId,
     required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
-    await repository.sendGIFMessage(
+    final serverMessageId = await   repository.sendGIFMessage(
       gif: gif,
       chatId: chatId,
       sendUser: sendUser,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
     );
+    return serverMessageId;
   }
 }

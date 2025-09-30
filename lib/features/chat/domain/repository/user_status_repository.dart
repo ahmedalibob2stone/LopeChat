@@ -3,5 +3,5 @@ abstract class UserStatusRepository {
 
   Future<String> getUserLastSeen(String userId);
 
-  Future<String> getUserOnlineStatus(String userId);
+  Future<bool> getUserOnlineStatus(String userId) ;
 }

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +11,7 @@ import '../../../../constant.dart';
 import '../../domain/entities/chat message/temp_message_entity.dart';
 import '../provider/chat_massage/viewmodel/provider.dart';
 import 'DisplayTypeofMassage.dart';
+import 'VideoPlayer.dart';
 
 class MyMessageCard extends ConsumerWidget {
   final String message;
@@ -48,6 +48,7 @@ class MyMessageCard extends ConsumerWidget {
     this.isTempMessage = false,
     this.tempMessage,
   }) : super(key: key);
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -251,13 +252,157 @@ class MyMessageCard extends ConsumerWidget {
 
       switch (type) {
         case EnumData.text:
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.55, // نفس قيود DisplayTypeofMassage
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildRichText(message),
+                if (temp.showProgress)
+                  LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+              ],
+            ),
+          );
+
+        case EnumData.image:
+          final imageFile = temp.file;
+          final uploadedUrl = temp.uploadedUrl;
+
+          return Stack(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.66,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: uploadedUrl != null
+                      ? Image.network( // بعد الانتهاء من الرفع
+                    uploadedUrl,
+                    fit: BoxFit.cover,
+                  )
+                      : (imageFile != null
+                      ? Image.file( // أثناء الرفع
+                    imageFile,
+                    fit: BoxFit.cover,
+                  )
+                      : const SizedBox()),
+                ),
+              ),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue, // نسبة التقدم
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+
+        case EnumData.video:
+          final file = temp.file!;
+          return Stack(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.65,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: CustomVideoPlayer(
+                    videoUrl: file.path,
+                  ),
+                ),
+              ),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+
+        case EnumData.audio:
+          bool isPlaying = false;
+          return Stack(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.55,
+                  maxHeight: 65, // ارتفاع زر الصوت
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    color: Colors.black12,
+                    child: Center(
+                      child: IconButton(
+                        iconSize: 36,
+                        icon: Icon(
+                          isPlaying ? Icons.pause_circle : Icons.play_circle,
+                          color: Colors.grey.shade700,
+                        ),
+                        onPressed: () async {
+
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (temp.showProgress)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: temp.progressValue,
+                    color: Colors.blue,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                ),
+            ],
+          );
+
+        case EnumData.gif:
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.66,
+              maxHeight: MediaQuery.of(context).size.height * 0.5,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: temp.file != null
+                  ? Image.file(temp.file!, fit: BoxFit.cover)
+                  : const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+            ),
+          );
+
+        case EnumData.link:
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                message,
-                style: const TextStyle(color: Colors.white),
-              ),
+              _buildRichText(message), // هنا استخدم RichText بدل Text عادي
               if (temp.showProgress)
                 LinearProgressIndicator(
                   value: temp.progressValue,
@@ -267,78 +412,6 @@ class MyMessageCard extends ConsumerWidget {
             ],
           );
 
-        case EnumData.image:
-        // تعديل هنا لضبط حجم الصورة المؤقتة
-          return Stack(
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.8, // نفس حجم رسائل Firestore
-                  maxHeight: 250, // يمكنك تعديلها إذا أحببت ارتفاع مختلف
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.file(
-                    temp.file!,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              if (temp.showProgress)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: LinearProgressIndicator(
-                    value: temp.progressValue,
-                    color: Colors.blue,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                ),
-            ],
-          );
-
-        case EnumData.video:
-          return Stack(
-            children: [
-              const Icon(Icons.videocam, size: 80, color: Colors.white),
-              if (temp.showProgress)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: LinearProgressIndicator(
-                    value: temp.progressValue,
-                    color: Colors.blue,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                ),
-            ],
-          );
-
-        case EnumData.audio:
-          return Stack(
-            children: [
-              const Icon(Icons.audiotrack, size: 80, color: Colors.white),
-              if (temp.showProgress)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: LinearProgressIndicator(
-                    value: temp.progressValue,
-                    color: Colors.blue,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                ),
-            ],
-          );
-
-        default:
-          return DisplayTypeofMassage(message: message, type: type);
       }
     } else {
       return DisplayTypeofMassage(message: message, type: type);

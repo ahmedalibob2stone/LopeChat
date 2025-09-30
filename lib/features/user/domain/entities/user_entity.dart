@@ -3,7 +3,7 @@ class UserEntity {
   final String name;
   final String uid;
   final String profile;
-  final String isOnline;
+  final bool  isOnline;
   final String lastSeen;
   final String phoneNumber;
   final List<String> groupId;
@@ -21,6 +21,6 @@ class UserEntity {
     required this.statu,
     required this.blockedUsers
   });
-  factory UserEntity.empty() => UserEntity(uid: '', name: 'Guest', profile: '', isOnline: '', lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
+  factory UserEntity.empty() => UserEntity(uid: '', name: 'Guest', profile: '', isOnline: false, lastSeen: '', phoneNumber: '', groupId: [], statu: '', blockedUsers: []);
 
 }

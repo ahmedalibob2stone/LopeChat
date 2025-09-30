@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class Loeading extends StatelessWidget {
@@ -6,8 +5,16 @@ class Loeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final indicatorSize = screenWidth * 0.1;
+
     return Center(
-      child: CircularProgressIndicator(),
+      child: SizedBox(
+        width: indicatorSize,
+        height: indicatorSize,
+        child: const CircularProgressIndicator(strokeWidth: 3),
+      ),
     );
   }
 }

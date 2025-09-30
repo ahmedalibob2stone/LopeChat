@@ -13,6 +13,9 @@ class StatusModel extends StatusEntity {
     required super.createdAt,
     required super.statusId,
     required super.whoCanSee,
+    required super.seenBy,
+
+
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +29,8 @@ class StatusModel extends StatusEntity {
       'profilePic': profilePic,
       'statusId': statusId,
       'whoCanSee': whoCanSee,
+      'seenBy': seenBy,
+
     };
   }
 
@@ -40,6 +45,9 @@ class StatusModel extends StatusEntity {
       profilePic: map['profilePic'] ?? '',
       statusId: map['statusId'] ?? '',
       whoCanSee: List<String>.from(map['whoCanSee'] ?? []),
+      seenBy: Map<String, List<String>>.from(
+        (map['seenBy'] ?? {}).map((key, value) => MapEntry(key, List<String>.from(value))),
+      ), // جد
     );
   }
 }

@@ -15,7 +15,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
   ChatMessageRepositoryImpl( {required this.remoteDataSource});
 
   @override
-  Future<void> sendTextMessage({
+  Future<String> sendTextMessage({
     required String text,
     required String chatId,
     required UserEntity  sendUser,
@@ -33,7 +33,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
     );
   }
   @override
-  Future<void> sendLinkMessage({
+  Future<String> sendLinkMessage({
     required String link,
     required String chatId,
     required UserEntity sendUser,
@@ -68,7 +68,7 @@ class ChatMessageRepositoryImpl implements IChatMessageRepository {
   }
 
   @override
-  Future<void> sendGIFMessage({
+  Future<String> sendGIFMessage({
     required String gif,
     required String chatId,
     required UserEntity sendUser,

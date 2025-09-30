@@ -5,7 +5,7 @@ import '../../../user/domain/entities/user_entity.dart';
 import '../entities/chat message/message_entity.dart';
 
 abstract class IChatMessageRepository {
-  Future<void> sendTextMessage({
+  Future<String> sendTextMessage({
     required String text,
     required String chatId,
     required UserEntity sendUser,
@@ -22,7 +22,7 @@ abstract class IChatMessageRepository {
     required bool isGroupChat,
   });
 
-  Future<void> sendGIFMessage({
+  Future<String> sendGIFMessage({
     required String gif,
     required String chatId,
     required UserEntity sendUser,
@@ -30,7 +30,7 @@ abstract class IChatMessageRepository {
     required bool isGroupChat,
   });
   @override
-  Future<void> sendLinkMessage({
+  Future<String> sendLinkMessage({
     required String link,
     required String chatId,
     required UserEntity sendUser,

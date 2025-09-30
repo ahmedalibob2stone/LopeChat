@@ -93,6 +93,7 @@ class MessageViewModel extends StateNotifier<MessageState> {
     required EnumData massageEnum,
     required MessageReply? messageReply,
     required bool isGroupChat,
+
   }) async {
     try {
       state = state.copyWith(isSending: true);
@@ -103,6 +104,7 @@ class MessageViewModel extends StateNotifier<MessageState> {
         massageEnum: massageEnum,
         messageReply: messageReply,
         isGroupChat: isGroupChat,
+
       );
       state = state.copyWith(isSending: false, error: null);
     } catch (e) {

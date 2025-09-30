@@ -10,10 +10,16 @@ abstract class IStatusRepository {
     required File statusImage,
 
     required String statusMessage,
+    required Map<String, List<String>> seenBy,
+    required String uid,
+
   });
 
-  Future<List<StatusEntity>> getStatuses();
-
-
-  Future<bool> deleteStatus(int index, List<String> photoUrls);
+  Stream<List<StatusEntity>> getStatusStream();
+  Future<void> markStatusAsSeen({
+    required String statusId,
+    required String imageUrl,
+    required String currentUserUid,
+  });
+  Future<bool> deleteStatusPhoto(String statusId, int index, List<String> photoUrls);
 }

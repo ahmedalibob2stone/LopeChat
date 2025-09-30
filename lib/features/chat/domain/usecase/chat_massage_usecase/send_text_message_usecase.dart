@@ -7,19 +7,22 @@ class SendTextMessageUseCase {
 
   SendTextMessageUseCase(this.repository);
 
-  Future<void> execute({
+  Future<String> execute({
     required String text,
     required String chatId,
     required UserEntity sendUser,
     required MessageReply? messageReply,
     required bool isGroupChat,
   }) async {
-    await repository.sendTextMessage(
+    final serverMessageId = await   repository.sendTextMessage(
       text: text,
       chatId: chatId,
       sendUser: sendUser,
       messageReply: messageReply,
       isGroupChat: isGroupChat,
     );
+    return serverMessageId;
+
   }
+
 }

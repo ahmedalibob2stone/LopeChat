@@ -35,10 +35,10 @@ class DeleteStatusViewModel extends StateNotifier<DeleteStatusState> {
 
   DeleteStatusViewModel(this.deleteUseCase) : super(DeleteStatusState.initial());
 
-  Future<bool> deleteStatus(int index, List<String> photoUrls) async {
+  Future<bool> deleteStatus(String statusId,int index, List<String> photoUrls) async {
     state = state.copyWith(isLoading: true, error: null, success: false);
     try {
-      final success = await deleteUseCase(index: index, photoUrls: photoUrls);
+      final success = await deleteUseCase(statusId:statusId ,index: index, photoUrls: photoUrls);
       if (success) {
         state = state.copyWith(isLoading: false, success: true);
         return true;

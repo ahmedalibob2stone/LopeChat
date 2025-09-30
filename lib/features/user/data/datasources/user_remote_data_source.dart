@@ -140,7 +140,7 @@ class UserRemoteDataSource {
         name: name.isEmpty ? "" : name,
         uid: uid,
         profile: photoUrl,
-        isOnline: "false",
+        isOnline: false,
         lastSeen: "",
         phoneNumber: phone,
         groupId: [],

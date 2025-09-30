@@ -11,26 +11,26 @@ import '../../../domain/usecase/chat_contact/unarchive_chat_usecase.dart';
 
 
 
-class ChatContactState {
+class ArchiveChatContactState {
   final bool isLoading;
   final List<ChatContactEntity> contacts;
   final List<ChatContactEntity> archivedContacts;
   final String? error;
 
-  ChatContactState({
+  ArchiveChatContactState({
     this.isLoading = false,
     this.contacts = const [],
     this.archivedContacts = const [],
     this.error,
   });
 
-  ChatContactState copyWith({
+  ArchiveChatContactState copyWith({
     bool? isLoading,
     List<ChatContactEntity>? contacts,
     List<ChatContactEntity>? archivedContacts,
     String? error,
   }) {
-    return ChatContactState(
+    return ArchiveChatContactState(
       isLoading: isLoading ?? this.isLoading,
       contacts: contacts ?? this.contacts,
       archivedContacts: archivedContacts ?? this.archivedContacts,
@@ -39,7 +39,7 @@ class ChatContactState {
   }
 }
 
-class ArchiveChatContactViewModel extends StateNotifier<ChatContactState> {
+class ArchiveChatContactViewModel extends StateNotifier<ArchiveChatContactState> {
   final GetArchivedChatsUseCase getArchivedChatsUseCase;
   final GetUnarchivedChatsUseCase getUnarchivedChatsUseCase;
   final ArchiveChatUseCase archiveChatUseCase;
@@ -53,7 +53,7 @@ class ArchiveChatContactViewModel extends StateNotifier<ChatContactState> {
     required this.getUnarchivedChatsUseCase,
     required this.archiveChatUseCase,
     required this.unarchiveChatUseCase,
-  }) : super(ChatContactState());
+  }) : super(ArchiveChatContactState());
 
   Future<void> loadUnarchivedChats() async{
     state = state.copyWith(isLoading: true);
